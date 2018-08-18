@@ -54,7 +54,7 @@ Start::
 	call UpdateCounters
 	call UpdateAudio
 	call UpdateGraphics
-	;call ProcessInput
+	call ProcessInput
 
 	jp .mainloop
 
