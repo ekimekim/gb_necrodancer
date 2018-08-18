@@ -145,14 +145,9 @@ UpdateGraphics::
 WriteColumn:
 	; set map coords
 	ld D, A
-	ld A, [PlayerX]
+	ld A, [PlayerY]
 	sub 4
 	ld E, A
-	; run for 9 tiles
-	ld B, 9
-.loop
-	call GetTile ; A = tile
-	ld C, A
 	; calculate destination tile
 	ld L, E
 	ld H, 0
@@ -167,22 +162,35 @@ ENDR
 	add A
 	and %00011111 ; A = (2*D) % 32
 	add L
-	ld L, A ; HL = saved HL + (2*D)%32 = target position
-	ld [HL], C ; set tile top-left
-	inc C
-	inc L
-	ld [HL], C ; set tile top-right
-	inc C
-	add 32
-	ld L, A ; HL = saved HL + (2*D)%32 + 32
+	ld L, A ; HL += (2*D) % 32 = target position
+	; run for 9 tiles
+	ld B, 9
+.loop
+	push HL
+	call GetTile ; A = tile
+	pop HL
+	ld [HL+], A ; set tile top-left
+	inc A
+	ld [HL], A ; set tile top-right
+	inc A
+	ld C, A
+	ld A, L
+	add 31
+	ld L, A ; HL = saved HL + 32. no carry because aligned for odd rows.
 	ld [HL], C ; set tile bottom-left
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
+	LongAdd HL, 31, HL ; Long add because even rows may not be aligned (every 8th row overflows)
+	ld A, H
+	and %00000011 ; HL % 1024
+	or $98 ; loop HL back to start of TileGrid
+	ld H, A
 	inc E
 	dec B
 	jr nz, .loop
 	ret
+
 
 ; Write row A from map to background map.
 ; Clobbers all
