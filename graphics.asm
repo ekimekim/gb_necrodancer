@@ -143,7 +143,46 @@ UpdateGraphics::
 
 ; Write column A from map to background map.
 WriteColumn:
-	ret ; TODO
+	; set map coords
+	ld D, A
+	ld A, [PlayerX]
+	sub 4
+	ld E, A
+	; run for 9 tiles
+	ld B, 9
+.loop
+	call GetTile ; A = tile
+	ld C, A
+	; calculate destination tile
+	ld L, E
+	ld H, 0
+REPT 6
+	LongShiftL HL
+ENDR
+	ld A, H
+	and %00000011 ; AL = (E * 64) % 1024
+	or $98 ; AL = TileGrid + ((E*64) % 1024) = start of target row in TileGrid
+	ld H, A ; HL = AL
+	ld A, D
+	add A
+	and %00011111 ; A = (2*D) % 32
+	add L
+	ld L, A ; HL = saved HL + (2*D)%32 = target position
+	ld [HL], C ; set tile top-left
+	inc C
+	inc L
+	ld [HL], C ; set tile top-right
+	inc C
+	add 32
+	ld L, A ; HL = saved HL + (2*D)%32 + 32
+	ld [HL], C ; set tile bottom-left
+	inc C
+	inc L
+	ld [HL], C ; set tile bottom-right
+	inc E
+	dec B
+	jr nz, .loop
+	ret
 
 ; Write row A from map to background map.
 ; Clobbers all
