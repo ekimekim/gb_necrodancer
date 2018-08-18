@@ -1,0 +1,9 @@
+IF !DEF(_G_TILE)
+_G_TILE EQU "true"
+
+RSRESET
+TILE_NONE rb 4
+TILE_FLOOR rb 4
+TILE_WALL rb 4
+
+ENDC

@@ -10,6 +10,7 @@ RELEASEOBJS := $(addprefix build/release/,$(OBJS))
 INCLUDES := $(wildcard include/*.asm)
 ASSETS := $(shell find assets/ -type f)
 TESTS := $(wildcard tests/*.py)
+RGBFIX_ARGS := -C
 
 all: build/release/rom.gb tests/.uptodate
 
@@ -35,11 +36,11 @@ build/release/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/release
 build/debug/rom.gb: $(DEBUGOBJS)
 # note padding with 0x40 = ld b, b = BGB breakpoint
 	rgblink -n $(@:.gb=.sym) -o $@ -p 0x40 $^
-	rgbfix -v -p 0x40 $@
+	rgbfix -v -p 0x40 $(RGBFIX_ARGS) $@
 
 build/release/rom.gb: $(RELEASEOBJS)
 	rgblink -n $(@:.gb=.sym) -o $@ $^
-	rgbfix -v -p 0 $@
+	rgbfix -v -p 0 $(RGBFIX_ARGS) $@
 
 build/debug build/release:
 	mkdir -p $@
