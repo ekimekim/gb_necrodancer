@@ -1,5 +1,5 @@
 {
-	"image": tile_dirt_wall_1.png",
+	"image": "tile_dirt_wall_1.png",
 	"pallette": [
 		[0, 0, 0],
 		[33, 21, 22],
