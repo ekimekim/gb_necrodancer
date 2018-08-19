@@ -47,12 +47,12 @@ namespace sprite_unpacker
                 var name = cells[0];
                 var cellPos = new Point(int.Parse(cells[1]), int.Parse(cells[2]));
 
-                var outputImg = new Bitmap(spriteSize.X * frames, spriteSize.Y);
-
-                var colors = new List<Color>();
-
                 for (int frameIndex = 0; frameIndex < frames; frameIndex++)
                 {
+                    var outputImg = new Bitmap(spriteSize.X, spriteSize.Y);
+
+                    var colors = new List<Color>();
+
                     for (int x = 0; x < spriteSize.X; x++)
                     {
                         for (int y = 0; y < spriteSize.Y; y++)
@@ -61,7 +61,7 @@ namespace sprite_unpacker
                             var inY = (cellPos.Y * spriteSize.Y) + y;
 
                             var inPixel = imgSrc.GetPixel(inX, inY);
-                            outputImg.SetPixel((frameIndex * spriteSize.X) + x, y, inPixel);
+                            outputImg.SetPixel(x, y, inPixel);
 
                             if(colors.Any(c => c == inPixel) == false)
                             {
@@ -69,39 +69,45 @@ namespace sprite_unpacker
                             }
                         }
                     }
+                    
+                    // Sort Colors
+                    colors = colors.OrderBy(c => c.A).ThenBy(c => c.R).ThenBy(c => c.G).ThenBy(c => c.B).ToList();
+
+                    if (colors.Count > 4)
+                        throw new Exception("Too many colors in " + name);
+
+                    var imagePath = string.Format("{0}/{1}_{2}.png", directory, name, frameIndex);
+                    outputImg.Save(imagePath, ImageFormat.Png);
+
+                    var palettePath = string.Format("{0}/{1}_{2}.json", directory, name, frameIndex);
+                    WriteImageMeta(palettePath, imagePath, colors);
                 }
-
-                // Sort Colors
-                colors = colors.OrderBy(c => c.A).ThenBy(c => c.R).ThenBy(c => c.G).ThenBy(c => c.B).ToList();
-
-                if (colors.Count > 4)
-                    throw new Exception("Too many colors in " + name);
-
-                var outPath = string.Format("{0}/{1}.png", directory, name);
-                outputImg.Save(outPath, ImageFormat.Png);
-
-                var jsonWrite = new StreamWriter(string.Format("{0}/{1}.json", directory, name));
-
-                jsonWrite.WriteLine("{");
-                jsonWrite.WriteLine("\t\"image\": " + Path.GetFileName(outPath) + "\",");
-                jsonWrite.WriteLine("\t\"pallette\": [");
-                for (int i = 0; i < 4; i++)
-                {
-                    var paletteColor = Color.Black;
-                    if (colors.Count > i && colors[i].A > 0)
-                        paletteColor = colors[i];
-
-                    var endChar = (i != 3) ? "," : "";
-
-                    var paletteColorLine = string.Format("\t\t[{0}, {1}, {2}]{3}", paletteColor.R, paletteColor.G, paletteColor.B, endChar);
-
-                    jsonWrite.WriteLine(paletteColorLine);
-                }
-                jsonWrite.WriteLine("\t]");
-                jsonWrite.WriteLine("}");
-
-                jsonWrite.Close();
             }
+        }
+
+        static void WriteImageMeta(string palettePath, string imagePath, List<Color> colors)
+        {
+            var jsonWrite = new StreamWriter(palettePath);
+
+            jsonWrite.WriteLine("{");
+            jsonWrite.WriteLine("\t\"image\": " + Path.GetFileName(imagePath) + "\",");
+            jsonWrite.WriteLine("\t\"pallette\": [");
+            for (int i = 0; i < 4; i++)
+            {
+                var paletteColor = Color.Black;
+                if (colors.Count > i && colors[i].A > 0)
+                    paletteColor = colors[i];
+
+                var endChar = (i != 3) ? "," : "";
+
+                var paletteColorLine = string.Format("\t\t[{0}, {1}, {2}]{3}", paletteColor.R, paletteColor.G, paletteColor.B, endChar);
+
+                jsonWrite.WriteLine(paletteColorLine);
+            }
+            jsonWrite.WriteLine("\t]");
+            jsonWrite.WriteLine("}");
+
+            jsonWrite.Close();
         }
 
         static void GetData(string[] csv, out int frames, out Point size)
