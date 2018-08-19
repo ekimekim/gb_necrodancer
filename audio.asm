@@ -1,4 +1,5 @@
 
+include "debug.asm"
 include "hram.asm"
 include "ioregs.asm"
 
@@ -20,13 +21,10 @@ InitAudio::
 
 	SetReg SoundCh1Sweep, 0 ; no sweep
 	SetReg SoundCh1LengthDuty, %10000000 ; 50% duty, length doesn't matter
-	SetReg SoundCh1Volume, $f0 ; full volume, no envelope
 
 	SetReg SoundCh2LengthDuty, %10000000 ; 50% duty, length doesn't matter
-	SetReg SoundCh2Volume, $f0 ; full volume, no envelope
 
 	SetReg SoundCh3OnOff, %10000000 ; turn on
-	SetReg SoundCh3Volume, %00100000 ; full volume
 
 	; Set up a square wave such that frequency acts the same as ch1 and ch2
 	ld C, LOW(SoundCh3Data)
@@ -75,24 +73,57 @@ UpdateAudio::
 	ld A, [AudioStep]
 	ld L, A
 
+	Debug "Beginning step %HL%"
+
 .newStepAfterLoad
 	ld A, [HL+]
 	and A
 	jr z, .loopSong
 	ld [AudioTimer], A
+	Debug "Set timer to %A%"
 
 	ld A, [HL+]
 	ld [SoundCh1FreqLo], A
+	ld A, [HL]
+	; need to enable/disable by setting volume
+	; (volume is easiest way to control on/off when not using length)
+	and A
+	jr z, .ch1off
+	ld A, $f0
+	jr .ch1next
+.ch1off
+	xor A
+.ch1next
+	ld [SoundCh1Volume], A
 	ld A, [HL+]
 	ld [SoundCh1Control], A
+
 	ld A, [HL+]
 	ld [SoundCh2FreqLo], A
+	ld A, [HL]
+	and A
+	jr z, .ch2off
+	ld A, $f0
+	jr .ch2next
+.ch2off
+	xor A
+.ch2next
+	ld [SoundCh2Volume], A
 	ld A, [HL+]
 	ld [SoundCh2Control], A
+
 	ld A, [HL+]
 	ld [SoundCh3FreqLo], A
 	ld A, [HL+]
 	ld [SoundCh3Control], A
+	and A
+	jr z, .ch3off
+	ld A, %00100000
+	jr .ch3next
+.ch3off
+	xor A
+.ch3next
+	ld [SoundCh3Volume], A
 
 	; save new step
 	ld A, H

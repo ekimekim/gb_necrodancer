@@ -35,6 +35,7 @@ Start::
 
 	; init things
 	call InitGraphics
+	call InitAudio
 
 	; Load first level
 	call LoadLevel
@@ -116,7 +117,8 @@ LoadLevel::
 	; reset all counters
 	call InitCounters
 	; init other things
-	call InitAudio
+	ld HL, PlaceholderMusic
+	call LoadAudio
 	; write initial set of tiles
 	call WriteScreen
 	ret
