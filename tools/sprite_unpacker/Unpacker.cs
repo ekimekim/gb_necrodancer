@@ -90,17 +90,17 @@ namespace sprite_unpacker
             var jsonWrite = new StreamWriter(palettePath);
 
             jsonWrite.WriteLine("{");
-            jsonWrite.WriteLine("\t\"image\": " + Path.GetFileName(imagePath) + "\",");
+            jsonWrite.WriteLine("\t\"image\": \"" + Path.GetFileName(imagePath) + "\",");
             jsonWrite.WriteLine("\t\"pallette\": [");
             for (int i = 0; i < 4; i++)
             {
-                var paletteColor = Color.Black;
+                var paletteColor = Color.Transparent;
                 if (colors.Count > i && colors[i].A > 0)
                     paletteColor = colors[i];
 
                 var endChar = (i != 3) ? "," : "";
 
-                var paletteColorLine = string.Format("\t\t[{0}, {1}, {2}]{3}", paletteColor.R, paletteColor.G, paletteColor.B, endChar);
+                var paletteColorLine = string.Format("\t\t[{0}, {1}, {2}, {3}]{4}", paletteColor.R, paletteColor.G, paletteColor.B, paletteColor.A, endChar);
 
                 jsonWrite.WriteLine(paletteColorLine);
             }
