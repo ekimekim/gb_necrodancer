@@ -1,0 +1,20 @@
+; definitions for AseSprite sprite
+FRAMES, 2
+SPRITE_SIZE, 16, 16
+; coords of different subsprites
+cadence, 0, 0
+bat, 0, 1
+bat_red, 1, 2
+ghost, 0, 3
+monkey, 0, 4
+monkey_white, 1, 4
+skeleton, 0, 5
+skeleton_yellow, 1, 5
+skeleton_black, 2, 5
+slime_green, 0, 5
+slime_blue, 1, 5
+slime_yellow, 2, 5
+wraith, 0, 6
+zombie, 0, 7
+tile_dirt, 0, 8
+tile_dirt_wall, 1, 8
