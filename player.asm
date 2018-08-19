@@ -23,8 +23,19 @@ ProcessInput::
 	; Can't move if we've already moved this beat (missed beat)
 	ld A, [BeatHasProcessed]
 	and A
-	jr nz, .missedbeat
+	jr nz, MissedBeat
+	jr .doTurn
 
+.noinput
+	; If it's the end of the beat and we haven't moved, process turn with nothing pressed
+	; and trigger a missed beat.
+	; otherwise, no input and beat's not over, do nothing
+	ld A, [BeatTimer]
+	and A
+	ret nz
+	call MissedBeat
+
+.doTurn
 	ld A, B
 	rla ; rotate left through carry, so top bit goes into carry
 	jr nc, .nodown
@@ -76,15 +87,8 @@ ProcessInput::
 
 	ret
 
-.noinput
-	; If it's the end of the beat and we haven't moved, missed beat
-	; otherwise, no input and beat's not over, do nothing
-	ld A, [BeatTimer]
-	and A
-	ret nz
 
-.missedbeat
-
+MissedBeat:
 	; TODO do stuff
 	ret
 

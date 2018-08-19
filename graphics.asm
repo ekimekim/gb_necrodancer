@@ -14,15 +14,24 @@ include "vram.asm"
 ; The map maps to the tilemap by (coord * 16) % 32
 
 
+; placeholders
+SPRITE_CADENCE EQU 0
+
+
 SECTION "Graphics data", ROM0
 
 MapTilePixels:
 ; placeholders
 include "assets/tile_none.asm"
-include "assets/tile_floor.asm"
+include "assets/tile_dirt_0.asm"
 _EndMapTilePixels:
-
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
+
+MapSpritePixels:
+; placeholders
+include "assets/cadence_0.asm"
+_EndMapSpritePixels:
+MAP_SPRITE_PIXELS_SIZE EQU _EndMapSpritePixels - MapSpritePixels
 
 ; define a color word from rgb args
 Color: MACRO
@@ -39,6 +48,15 @@ REPT 8
 	Color 10, 10, 10
 	Color 0, 0, 0
 ENDR
+
+
+SECTION "Sprite Bounce LUT", ROM0, ALIGN[4]
+
+; SpriteBounce lookup-table maps from AnimationTimer to change in Y position.
+; This sequence approximates a parabolic arc with apex at 4 pixels
+SpriteBounce:
+	db 0, -1, -2, -2, -3, -3, -3, -3, -4, -3, -3, -3, -3, -2, -2, -1
+
 
 SECTION "Graphics methods", ROM0
 
@@ -64,6 +82,12 @@ InitGraphics::
 	ld BC, MAP_TILE_PIXELS_SIZE
 	ld HL, MapTilePixels
 	ld DE, AltTileMap
+	LongCopy
+
+	; Copy sprite data
+	ld BC, MAP_SPRITE_PIXELS_SIZE
+	ld HL, MapSpritePixels
+	ld DE, BaseTileMap
 	LongCopy
 
 	ret
@@ -136,8 +160,48 @@ UpdateGraphics::
 	ld A, E
 	ld [ScrollY], A
 
-	; TODO sprites
+	; Update sprites
 
+	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
+	ld HL, SpriteTable
+	ld D, 72 + 8
+	ld E, 64 + 16
+	ld B, SPRITE_CADENCE
+	ld C, 0
+	call WriteSprite
+
+	ret
+
+
+; Write sprite with tile numbers B to B+3 to (D-8, E-16) with flags C using pair of sprite slots,
+; with HL pointing to first slot.
+; Automatically includes sprite bounce.
+; Clobbers A, E. Points HL to 2 sprite slots forward.
+WriteSprite:
+	ld A, [AnimationTimer]
+	push HL
+	LongAddToA SpriteBounce, HL
+	ld A, [HL]
+	pop HL
+	add A, E
+	ld [HL+], A ; first Y
+	ld E, A
+	ld A, D
+	ld [HL+], A ; first X
+	ld A, B
+	ld [HL+], A ; first tile
+	ld A, C
+	ld [HL+], A ; first flags
+	ld A, E
+	ld [HL+], A ; second Y
+	ld A, D
+	add 8
+	ld [HL+], A ; second X
+	ld A, B
+	add 2
+	ld [HL+], A ; second tile
+	ld A, C
+	ld [HL+], A ; second flags
 	ret
 
 
