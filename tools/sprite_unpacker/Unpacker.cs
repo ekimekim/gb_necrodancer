@@ -95,7 +95,7 @@ namespace sprite_unpacker
             for (int i = 0; i < 4; i++)
             {
                 var paletteColor = Color.Transparent;
-                if (colors.Count > i && colors[i].A > 0)
+                if (colors.Count > i)
                     paletteColor = colors[i];
 
                 var endChar = (i != 3) ? "," : "";
