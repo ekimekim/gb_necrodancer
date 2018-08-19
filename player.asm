@@ -29,9 +29,13 @@ ProcessInput::
 .noinput
 	; If it's the end of the beat and we haven't moved, process turn with nothing pressed
 	; and trigger a missed beat.
-	; otherwise, no input and beat's not over, do nothing
+	; otherwise, either:
+	;   no input and beat's not over, do nothing
+	;   no input and beat's over but we did something this beat, do nothing
 	ld A, [BeatTimer]
-	and A
+	ld C, A
+	ld A, [BeatHasProcessed]
+	or C ; set z if BeatTimer == 0 and BeatHasProcessed == 0
 	ret nz
 	call MissedBeat
 
