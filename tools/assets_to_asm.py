@@ -7,10 +7,15 @@ It scans for *.json files that contain the keys:
 	            eg. a 3-item list [R, G, B] for color images, a simple integer for greyscale.
 	"length": Optional. Number of tiles in the image. If not given, is worked out from image size.
 	"name": Optional. The name of the include file to produce. Defaults to the json file's name (not including .json suffix).
+	"tall_sprites": boolean, optional. See below.
 
 Images are scanned for tiles left-to-right, then top-to-bottom. eg. in a 32x16 image, the tiles would be numbered:
 	1234
 	5678
+However, to support 8x16 sprites being in the same order in the file as they are on screen,
+if the tall_sprites option is set, it will read tiles in vertical pairs, like so:
+	1357
+	2468
 
 For each json file / image file, it produces an asm file in the output directory that defines the data.
 """
@@ -57,7 +62,7 @@ def process_file(targetdir, filepath, outdir):
 	name = meta.get('name', os.path.basename(filepath)[:-len('.json')])
 	image = Image.open(imagepath)
 
-	tiles = image_to_tiles(image, meta['pallette'], meta.get('length'))
+	tiles = image_to_tiles(image, meta['pallette'], meta.get('length'), meta.get('tall_sprites'))
 	text = tiles_to_text(filepath, tiles)
 
 	outpath_dir = os.path.join(outdir, os.path.relpath(filepath_dir, targetdir))
@@ -73,19 +78,30 @@ def hashable(value):
 	return tuple(value) if isinstance(value, list) else value
 
 
-def image_to_tiles(image, pallette, length=None):
+def image_to_tiles(image, pallette, length=None, tall_sprites=False):
 	width, height = image.size
 
 	if len(pallette) != 4:
 		raise ValueError("pallette must be exactly 4 items")
 	pallette = {hashable(value): index for index, value in enumerate(pallette)}
 
-	tiles = []
-	for row in range(height / 8):
-		for col in range(width / 8):
-			tiles.append(extract_tile(image, row, col, pallette))
-			if length is not None and len(tiles) == length:
-				return tiles
+	if tall_sprites:
+		rows_cols = [
+			(2 * r + half, c)
+			for r in range(height / 16)
+			for c in range(height / 8)
+			for half in (0, 1)
+		]
+	else:
+		rows_cols = [(r, c) for r in range(height/8) for c in range(width/8)]
+
+	if length is None:
+		length = len(rows_cols)
+
+	tiles = [
+		extract_tile(image, row, col, pallette)
+		for row, col in rows_cols[:length]
+	]
 
 	return tiles
 

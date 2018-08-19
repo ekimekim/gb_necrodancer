@@ -171,13 +171,15 @@ ENDR
 	pop HL
 	ld [HL+], A ; set tile top-left
 	inc A
-	ld [HL], A ; set tile top-right
 	inc A
+	ld [HL], A ; set tile top-right
+	dec A
 	ld C, A
 	ld A, L
 	add 31
 	ld L, A ; HL = saved HL + 32. no carry because aligned for odd rows.
 	ld [HL], C ; set tile bottom-left
+	inc C
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
@@ -225,12 +227,14 @@ ENDR
 	ld L, A ; HL = saved HL + (2*D)%32 = target position
 	ld [HL], C ; set tile top-left
 	inc C
+	inc C
 	inc L
 	ld [HL], C ; set tile top-right
-	inc C
+	dec C
 	add 32
 	ld L, A ; HL = saved HL + (2*D)%32 + 32
 	ld [HL], C ; set tile bottom-left
+	inc C
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
