@@ -13,10 +13,6 @@ BeatTimer rb 1
 ; Counts beats since start of song
 BeatCounter rb 2
 
-; Counts frames since start of song, for audio.
-; Big-endian.
-FrameCounter rb 2
-
 ; Flag that indicates whether the current beat has been run, so it can't run twice
 BeatHasProcessed rb 1
 
@@ -30,6 +26,12 @@ MovingY rb 1
 ; Player location within map. Is updated when animation moving to it *begins*.
 PlayerX rb 1
 PlayerY rb 1
+
+; Frames until next audio step
+AudioTimer rb 1
+
+; Pointer to next audio step, little-endian
+AudioStep rb 2
 
 
 HRAM_END rb 0

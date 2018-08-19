@@ -65,8 +65,6 @@ InitCounters:
 	ld [AnimationTimer], A
 	ld [BeatCounter], A
 	ld [BeatCounter+1], A
-	ld [FrameCounter], A
-	ld [FrameCounter+1], A
 	ld [BeatHasProcessed], A
 	ld A, [BeatLength]
 	ld [BeatTimer], A
@@ -99,17 +97,6 @@ UpdateCounters:
 	ld A, [BeatLength]
 .nonewbeat
 	ld [BeatTimer], A
-
-	; increment FrameCounter
-	ld A, [FrameCounter]
-	ld D, A
-	ld A, [FrameCounter+1]
-	ld E, A
-	inc DE
-	ld A, D
-	ld [FrameCounter], A
-	ld A, E
-	ld [FrameCounter+1], A
 
 	ret
 
