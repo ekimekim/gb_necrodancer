@@ -29,6 +29,7 @@ except ImportError:
 
 
 def main(targetdir, outdir):
+	any_failed = False
 	for path, dirs, files in os.walk(targetdir):
 		for filename in files:
 			if not filename.endswith('.json'):
@@ -39,6 +40,8 @@ def main(targetdir, outdir):
 			except Exception:
 				sys.stderr.write("An error occurred while processing file {!r}:".format(filepath))
 				traceback.print_exc()
+				any_failed = True
+	sys.exit(1 if any_failed else 0)
 
 
 def process_file(targetdir, filepath, outdir):
@@ -66,12 +69,16 @@ def process_file(targetdir, filepath, outdir):
 		f.write(text)
 
 
+def hashable(value):
+	return tuple(value) if isinstance(value, list) else value
+
+
 def image_to_tiles(image, pallette, length=None):
 	width, height = image.size
 
 	if len(pallette) != 4:
 		raise ValueError("pallette must be exactly 4 items")
-	pallette = {value: index for index, value in enumerate(pallette)}
+	pallette = {hashable(value): index for index, value in enumerate(pallette)}
 
 	tiles = []
 	for row in range(height / 8):
