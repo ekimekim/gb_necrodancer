@@ -172,8 +172,7 @@ LCDYCompare EQU $ff45
 ; area ($fe00-$fe9f). While this is happening, only high ram ($ff80-$fffe) can be used.
 ; DMA transfer is initiated by writing the upper byte of the start source address to this register.
 ; eg. to start the transfer from address $1200, you would write $12.
-; The DMA will complete 448 cycles later, best calculated as 28 loops of {dec a; jr nz}
-; Though another source reports 160 cycles?
+; The DMA will complete 160 cycles later.
 DMATransfer EQU $ff46
 
 ; "BGP" Background and Window palette data

@@ -58,6 +58,33 @@ SpriteBounce:
 	db 0, -1, -2, -2, -3, -3, -3, -3, -4, -3, -3, -3, -3, -2, -2, -1
 
 
+SECTION "Shadow sprite table", WRAM0, ALIGN[8]
+
+; A copy of the sprite table that gets DMA'd over during vblank
+ShadowSpriteTable:
+	ds 160
+
+
+SECTION "DMA wait routine data", ROM0
+
+; Copied to hram for sprite dma.
+; Loads A to DMATransfer then waits until complete
+_DMAWait:
+	ld [DMATransfer], A
+	ld A, 40 ; loop is 4 cycles, we need to wait 160 cycles, 160/4 = 40
+.wait
+	dec a
+	jr nz, .wait
+	ret
+DMA_WAIT_SIZE EQU @ - _DMAWait
+
+
+SECTION "DMA wait routine", HRAM
+
+DMAWait:
+	ds DMA_WAIT_SIZE
+
+
 SECTION "Graphics methods", ROM0
 
 
@@ -90,11 +117,31 @@ InitGraphics::
 	ld DE, BaseTileMap
 	LongCopy
 
+	; Set up DMA wait
+	ld B, DMA_WAIT_SIZE
+	ld HL, _DMAWait
+	ld DE, DMAWait
+	Copy
+
 	ret
 
 
+; Does work to prepare for UpdateGraphics. Cannot write to vram.
+PrepareGraphics::
+
+	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
+	ld HL, ShadowSpriteTable
+	ld D, 72 + 8
+	ld E, 64 + 16
+	ld B, SPRITE_CADENCE
+	ld C, 0
+	call WriteSprite
+
+	ret
+
+
+; Runs during vblank
 UpdateGraphics::
-	; Runs during vblank
 
 	; If animation timer == 15, we need to write a new row or column
 	ld A, [AnimationTimer]
@@ -160,15 +207,8 @@ UpdateGraphics::
 	ld A, E
 	ld [ScrollY], A
 
-	; Update sprites
-
-	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
-	ld HL, SpriteTable
-	ld D, 72 + 8
-	ld E, 64 + 16
-	ld B, SPRITE_CADENCE
-	ld C, 0
-	call WriteSprite
+	ld A, HIGH(ShadowSpriteTable)
+	call DMAWait
 
 	ret
 

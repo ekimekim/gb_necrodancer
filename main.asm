@@ -49,9 +49,10 @@ Start::
 	ei
 
 .mainloop
-	halt ; wait for vblank
 
 	call UpdateCounters
+	call PrepareGraphics
+	halt ; wait for vblank
 	call UpdateAudio
 	call UpdateGraphics
 	call ProcessInput

@@ -31,4 +31,8 @@ MovingY rb 1
 PlayerX rb 1
 PlayerY rb 1
 
+
+HRAM_END rb 0
+HRAM_SIZE EQU HRAM_END + (-$ff80)
+
 ENDC
