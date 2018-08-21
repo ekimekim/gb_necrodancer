@@ -53,3 +53,6 @@ bgb: build/release/rom.gb
 
 clean:
 	rm -f build/*/*.o build/*/rom.sym build/*/rom.gb rom.gb include/assets/.uptodate include/assets/*.asm tests/*/*.{asm,o,sym,gb}
+
+copy: build/release/rom.gb
+	copy-rom necrodancer build/release/rom.gb
