@@ -26,8 +26,8 @@ ProcessInput::
 
 	call GatherInput
 	and A
+	ld C, A
 	jr z, .noinput
-	ld B, A
 
 	; Can't move if we've already moved this beat (missed beat)
 	ld A, [BeatHasProcessed]
@@ -42,14 +42,14 @@ ProcessInput::
 	;   no input and beat's not over, do nothing
 	;   no input and beat's over but we did something this beat, do nothing
 	ld A, [BeatTimer]
-	ld C, A
+	ld B, A
 	ld A, [BeatHasProcessed]
-	or C ; set z if BeatTimer == 0 and BeatHasProcessed == 0
+	or B ; set z if BeatTimer == 0 and BeatHasProcessed == 0
 	ret nz
 	call MissedBeat
 
 .doTurn
-	ld A, B
+	ld A, C
 	rla ; rotate left through carry, so top bit goes into carry
 	jr nc, .nodown
 	ld A, 1
@@ -121,8 +121,10 @@ ProcessInput::
 	ret
 
 
+; Clobbers A, B
 MissedBeat:
-	; TODO do stuff (play sound, reset multiplier?)
+	ld A, 64
+	call PlayNoise ; play white noise for 64/256th = 1/4th of a second
 	ret
 
 

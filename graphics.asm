@@ -139,6 +139,9 @@ InitGraphics::
 	dec B
 	jr nz, .zeroSprites
 
+	; Init redraw queue
+	RingInit TileRedrawQueue
+
 	ret
 
 
