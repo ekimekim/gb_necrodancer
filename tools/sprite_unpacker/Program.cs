@@ -10,9 +10,20 @@ namespace sprite_unpacker
     {
         static void Main(string[] args)
         {
-            foreach(var arg in args)
+            for (int i = 0; i < args.Length; i++)
             {
-                Unpacker.Unpack(arg);
+                if(args[i] == "-sprite8")
+                {
+                    var imagePath = args[i + 1];
+                    var csvPath = args[i + 2];
+                    Unpacker.Unpack(imagePath, csvPath, 8);
+                }
+                if (args[i] == "-sprite16")
+                {
+                    var imagePath = args[i + 1];
+                    var csvPath = args[i + 2];
+                    Unpacker.Unpack(imagePath, csvPath, 16);
+                }
             }
         }
     }

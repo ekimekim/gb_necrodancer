@@ -1,0 +1,21 @@
+#
+# Format:
+# Name, cellX, cellY, paletteIndex
+#
+# PALETTES (0)
+# 0 = Dark
+# 1 = Red
+# 2 = Blue
+# 3 = Purple
+# 4 = Green
+# 5 = Yellow
+# 6 = Zombie
+# 7 = Cadence
+# 8 = Dirt
+# 9 to 16 unused
+palettes, 0, 0
+# Hearts (2)
+heart_full_0, 00, 2, 7
+heart_full_1, 20, 2, 7
+heart_half_0, 00, 2, 7
+heart_half_1, 20, 2, 7

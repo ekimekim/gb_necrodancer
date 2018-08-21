@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -11,112 +12,107 @@ namespace sprite_unpacker
 {
     public class Unpacker
     {
+        static string DumpDirectoryPath = (Directory.GetCurrentDirectory() + "/Dump_" + DateTime.UtcNow.Millisecond);
+
         const string FramesKey = "FRAMES";
         const string FrameSizeKey = "SPRITE_SIZE";
-
-        public static void Unpack(string imagePath)
+        
+        class Row
         {
+            public string Name;
+            public int xPos;
+            public int yPos;
+            public int paletteIndex = -1;
+
+            public static Row Parse(string line)
+            {
+                if (string.IsNullOrWhiteSpace(line) || line.Contains("#") || line.Contains(",") == false)
+                    return null;
+
+                var cells = line.Replace(" ", "").Split(',');
+
+                var row = new Row();
+                row.Name = cells[0];
+                row.xPos = int.Parse(cells[1]);
+                row.yPos = int.Parse(cells[2]);
+                if(cells.Length > 3)
+                    row.paletteIndex = int.Parse(cells[3]);
+
+                return row;
+            }
+        }
+
+        public static void Unpack(string imagePath, string csvPath, int spriteWidth)
+        {
+            if (Directory.Exists(DumpDirectoryPath) == false)
+                Directory.CreateDirectory(DumpDirectoryPath);
+
             imagePath = Path.GetFullPath(imagePath);
             var img = new Bitmap(imagePath);
-            var csv = File.ReadAllLines(imagePath.Replace(".png", ".unpack.csv"));
+            var csv = File.ReadAllLines(csvPath);
 
-            int frames;
-            Point frameSize;
-            GetData(csv, out frames, out frameSize);
+            var rows = csv.Select(Row.Parse).Where(r => r != null).ToList();
+            var palettes = GetPalettes(img, rows, spriteWidth);
 
-            var directory = Path.GetDirectoryName(imagePath);
+            UnpackSprites(img, rows, spriteWidth, palettes);
 
-            UnpackSprites(img, csv, frames, frameSize, directory);
-
-            //Bitmap image, string[] csv
-
+            System.Diagnostics.Process.Start(DumpDirectoryPath);
         }
 
-        static void UnpackSprites(Bitmap imgSrc, string[] csv, int frames, Point spriteSize, string directory)
+        static void UnpackSprites(Bitmap imgSrc, List<Row> rows, int spriteWidth, Dictionary<int, Color[]> palettes)
         {
-            var bigFrameWidth = imgSrc.Width / frames;
-
-
-            foreach (var rowRaw in csv)
+            foreach (var row in rows)
             {
-                if (string.IsNullOrWhiteSpace(rowRaw) || rowRaw.Contains(";") || rowRaw.Contains(FramesKey) || rowRaw.Contains(FrameSizeKey))
-                    continue;
-
-                var cells = rowRaw.Replace(" ", "").Split(',');
-
-                var name = cells[0];
-                var cellPos = new Point(int.Parse(cells[1]), int.Parse(cells[2]));
-
-                for (int frameIndex = 0; frameIndex < frames; frameIndex++)
+                var palette = row.paletteIndex >= 0 ? palettes[row.paletteIndex] : null;
+                var outImage = new Bitmap(spriteWidth, spriteWidth);
+                for (int x = 0; x < spriteWidth; x++)
                 {
-                    var outputImg = new Bitmap(spriteSize.X, spriteSize.Y);
-
-                    var colors = new List<Color>();
-
-                    for (int x = 0; x < spriteSize.X; x++)
+                    for (int y = 0; y < spriteWidth; y++)
                     {
-                        for (int y = 0; y < spriteSize.Y; y++)
+                        var inPixel = imgSrc.GetPixel((row.xPos * spriteWidth) + x, (row.yPos * spriteWidth) + y);
+
+                        if(palette != null && palette.Contains(inPixel) == false)
                         {
-                            var inX = (frameIndex * bigFrameWidth) + (cellPos.X * spriteSize.X) + x;
-                            var inY = (cellPos.Y * spriteSize.Y) + y;
-
-                            var inPixel = imgSrc.GetPixel(inX, inY);
-                            outputImg.SetPixel(x, y, inPixel);
-
-                            if(colors.Any(c => c == inPixel) == false)
-                            {
-                                colors.Add(inPixel);
-                            }
+                            throw new Exception(row.Name + " color " + inPixel + " not in palette " + row.paletteIndex);
                         }
+
+                        outImage.SetPixel(x, y, inPixel);
                     }
-                    
-                    // Sort Colors
-                    colors = colors.OrderBy(c => c.A).ThenBy(c => c.R).ThenBy(c => c.G).ThenBy(c => c.B).ToList();
-
-                    if (colors.Count > 4)
-                        throw new Exception("Too many colors in " + name);
-
-                    var imagePath = string.Format("{0}/{1}_{2}.png", directory, name, frameIndex);
-                    outputImg.Save(imagePath, ImageFormat.Png);
-
-                    var palettePath = string.Format("{0}/{1}_{2}.json", directory, name, frameIndex);
-                    WriteImageMeta(palettePath, imagePath, colors);
                 }
+                var outPath = DumpDirectoryPath + "/" + row.Name + ".png";
+                //outImage.Save(outPath, ImageFormat.Png);
+
+                var bigVersion = new Bitmap(spriteWidth * 8, spriteWidth * 8);
+                using (var graphics = Graphics.FromImage(bigVersion))
+                {
+                    graphics.CompositingMode = CompositingMode.SourceCopy;
+                    graphics.CompositingQuality = CompositingQuality.Default;
+                    graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    graphics.SmoothingMode = SmoothingMode.None;
+                    graphics.PixelOffsetMode = PixelOffsetMode.None;
+
+                    graphics.DrawImage(outImage, new Rectangle(0, 0, bigVersion.Width, bigVersion.Height));
+                }
+                bigVersion.Save(outPath, ImageFormat.Png);
             }
         }
 
-        static void WriteImageMeta(string palettePath, string imagePath, List<Color> colors)
+        static Dictionary<int, Color[]> GetPalettes(Bitmap imgSrc, List<Row> rows, int spriteWidth)
         {
-            var jsonWrite = new StreamWriter(palettePath);
+            var palettes = new Dictionary<int, Color[]>();
+            var palettesRow = rows.First(r => r.Name == "palettes");
 
-            jsonWrite.WriteLine("{");
-            jsonWrite.WriteLine("\t\"image\": \"" + Path.GetFileName(imagePath) + "\",");
-            jsonWrite.WriteLine("\t\"pallette\": [");
-            for (int i = 0; i < 4; i++)
+            for (int paletteIndex = 0; paletteIndex < 16; paletteIndex++)
             {
-                var paletteColor = Color.Transparent;
-                if (colors.Count > i)
-                    paletteColor = colors[i];
-
-                var endChar = (i != 3) ? "," : "";
-
-                var paletteColorLine = string.Format("\t\t[{0}, {1}, {2}, {3}]{4}", paletteColor.R, paletteColor.G, paletteColor.B, paletteColor.A, endChar);
-
-                jsonWrite.WriteLine(paletteColorLine);
+                var palette = new Color[4];
+                for (int x = 0; x < palette.Length; x++)
+                {
+                    palette[x] = imgSrc.GetPixel((palettesRow.xPos * spriteWidth) + x, (palettesRow.yPos * spriteWidth) + paletteIndex);
+                }
+                palettes.Add(paletteIndex, palette);
             }
-            jsonWrite.WriteLine("\t]");
-            jsonWrite.WriteLine("}");
 
-            jsonWrite.Close();
-        }
-
-        static void GetData(string[] csv, out int frames, out Point size)
-        {
-            var framesRow = csv.First(l => l.Contains(FramesKey)).Replace(" ", "").Split(',');
-            var sizeRow = csv.First(l => l.Contains(FrameSizeKey)).Replace(" ", "").Split(',');
-
-            frames = int.Parse(framesRow[1]);
-            size = new Point(int.Parse(sizeRow[1]), int.Parse(sizeRow[2]));
+            return palettes;
         }
     }
 }
