@@ -3,6 +3,7 @@ include "hram.asm"
 include "ioregs.asm"
 include "longcalc.asm"
 include "macros.asm"
+include "ring.asm"
 include "vram.asm"
 
 ; Screen is 20x18 hardware tiles = 10x9 map tiles
@@ -21,14 +22,13 @@ SPRITE_CADENCE EQU 0
 SECTION "Graphics data", ROM0
 
 MapTilePixels:
-; placeholders
 include "assets/tile_none.asm"
 include "assets/tile_dirt_0.asm"
+include "assets/tile_dirt_wall_0.asm"
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
 MapSpritePixels:
-; placeholders
 include "assets/cadence_0.asm"
 _EndMapSpritePixels:
 MAP_SPRITE_PIXELS_SIZE EQU _EndMapSpritePixels - MapSpritePixels
@@ -63,6 +63,13 @@ SECTION "Shadow sprite table", WRAM0, ALIGN[8]
 ; A copy of the sprite table that gets DMA'd over during vblank
 ShadowSpriteTable:
 	ds 160
+
+
+SECTION "Other graphics memory", WRAM0
+
+; This queue contains up to 21 triples (x, y, new value) of tiles to update
+TileRedrawQueue:
+	RingDeclare 63
 
 
 SECTION "DMA wait routine data", ROM0
@@ -123,6 +130,15 @@ InitGraphics::
 	ld DE, DMAWait
 	Copy
 
+	; Zero sprite table
+	xor A
+	ld B, 160
+	ld HL, ShadowSpriteTable
+.zeroSprites
+	ld [HL+], A
+	dec B
+	jr nz, .zeroSprites
+
 	ret
 
 
@@ -170,7 +186,60 @@ UpdateGraphics::
 	add B ; A = 4*MovingY + PlayerX = target column
 	call WriteRow
 
+	jp .afterRedraw
+
 .noNewRowCol
+
+	; Since we're not drawing any new rows/cols, we have some time to update some existing
+	; entries.
+	; For simplicity / prevent overtime, we only do one per frame. This should be fine.
+	RingPop TileRedrawQueue, 63, D ; set z if empty
+	jr z, .afterRedraw
+	; assume that no partial triplets can be written
+	RingPopNoCheck TileRedrawQueue, 63, E
+	RingPopNoCheck TileRedrawQueue, 63, C
+	; now DE = coords and C = new value
+
+	; check if coords are on screen: (D, E) in Player +/- (5, 4)
+	AbsDiff [PlayerX], D ; A = |PlayerX - D|
+	cp 6 ; set c if <= 5
+	jr nc, .afterRedraw ; if c not set, out of range
+	AbsDiff [PlayerY], E ; A = |PlayerY - E|
+	cp 5 ; set c if <= 4
+	jr nc, .afterRedraw ; if c not set, out of range
+
+	; calculate destination tile
+	ld L, E
+	ld H, 0
+REPT 6
+	LongShiftL HL
+ENDR
+	ld A, H
+	and %00000011 ; AL = (E * 64) % 1024
+	or $98 ; AL = TileGrid + ((E*64) % 1024) = start of target row in TileGrid
+	ld H, A ; HL = AL
+	ld A, D
+	add A
+	and %00011111 ; A = (2*D) % 32
+	add L
+	ld L, A ; HL += (2*D) % 32 = target position
+
+	ld [HL], C ; set tile top-left
+	inc C
+	inc C
+	inc L
+	ld [HL], C ; set tile top-right
+	dec C
+	ld A, L
+	add 31
+	ld L, A ; HL = top-left + 32. no carry because aligned for odd rows.
+	ld [HL], C ; set tile bottom-left
+	inc C
+	inc C
+	inc L
+	ld [HL], C ; set tile bottom-right
+
+.afterRedraw
 
 	; Calcluate ScrollX and ScrollY
 	ld A, [PlayerX]
@@ -364,4 +433,14 @@ WriteScreen::
 	inc C
 	dec B
 	jr nz, .loop
+	ret
+
+
+; Enqueue tile at (D,E) to be redrawn with value C
+; Assumes ring will never fill!
+; Clobbers A, HL
+EnqueueTileRedraw::
+	RingPushNoCheck TileRedrawQueue, 63, D
+	RingPushNoCheck TileRedrawQueue, 63, E
+	RingPushNoCheck TileRedrawQueue, 63, C
 	ret

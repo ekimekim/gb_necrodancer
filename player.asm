@@ -1,8 +1,17 @@
 
 include "hram.asm"
 include "ioregs.asm"
+include "longcalc.asm"
+include "tile.asm"
 
 SECTION "Player logic", ROM0
+
+; List of handlers for each tile type, saying what to do when you attempt to move into them.
+; Each handler is called with DE = (x,y), and may clobber all regs
+MoveIntoTileHandlers:
+	dw PreventMove ; TILE_NONE
+	dw NopFunc ; TILE_FLOOR
+	dw DigWall ; TILE_WALL
 
 ProcessInput::
 
@@ -71,9 +80,29 @@ ProcessInput::
 	ld A, 1
 	ld [BeatHasProcessed], A
 
-	; TODO movement validity / attacking here based on MovingX/Y
+	; Check dest square
 	; NOTE we rely on movement validity to prevent player going out of bounds
+	ld A, [PlayerX]
+	ld B, A
+	ld A, [MovingX]
+	add B
+	ld D, A
 
+	ld A, [PlayerY]
+	ld B, A
+	ld A, [MovingY]
+	add B
+	ld E, A
+
+	call GetTile ; set A = tile we're moving to
+	rrca ; halve A (top bit = 0 since tile values are multiples of 4)
+	LongAddToA MoveIntoTileHandlers, HL
+	ld A, [HL+]
+	ld H, [HL]
+	ld L, A ; HL = [HL], little endian
+	call CallHL ; call tile handler, clobbers all and may mutate hram / call MissedBeat
+
+	; Finally, update new player pos with final result of MovingX/MovingY
 	ld A, [PlayerX]
 	ld B, A
 	ld A, [MovingX]
@@ -93,7 +122,7 @@ ProcessInput::
 
 
 MissedBeat:
-	; TODO do stuff
+	; TODO do stuff (play sound, reset multiplier?)
 	ret
 
 
@@ -120,3 +149,24 @@ ENDR
 	and $0f
 	or B
 	ret
+
+
+; Zeroes out Moving vars. Clobbers A.
+CancelMove:
+	xor A
+	ld [MovingX], A
+	ld [MovingY], A
+	ret
+
+; Tile handlers
+
+; Cancels movement and triggers missed beat
+PreventMove:
+	call CancelMove
+	jp MissedBeat
+
+; Cancels movement, digs out a wall by replacing it with a floor
+DigWall:
+	call CancelMove
+	ld C, TILE_FLOOR
+	jp SetTile

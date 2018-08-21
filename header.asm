@@ -49,10 +49,19 @@ IntJoypad::
 	reti
 
 section "Core Utility", ROM0
+
 HaltForever::
 	halt
 	; halt can be recovered from after an interrupt or reset, so halt again
 	jp HaltForever
+
+; Trampoline to dispatch a call to the code pointed to by HL
+CallHL::
+	jp HL
+
+; Function that does nothing
+NopFunc::
+	ret
 
 section "Header", ROM0 [$100]
 ; This must be nop, then a jump, then blank up to 150
