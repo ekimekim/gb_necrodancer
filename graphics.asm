@@ -25,6 +25,7 @@ MapTilePixels:
 include "assets/tile_none.asm"
 include "assets/tile_dirt.asm"
 include "assets/tile_dirt_wall.asm"
+include "assets/tile_dirt_wall.asm"
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
@@ -55,6 +56,7 @@ SECTION "Tile flags LUT", ROM0, ALIGN[4]
 TileFlags:
 	include "assets/flags_tile_none.asm"
 	include "assets/flags_tile_dirt.asm"
+	include "assets/flags_tile_dirt_wall.asm"
 	include "assets/flags_tile_dirt_wall.asm"
 
 

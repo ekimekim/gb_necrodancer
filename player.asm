@@ -11,7 +11,8 @@ SECTION "Player logic", ROM0
 MoveIntoTileHandlers:
 	dw PreventMove ; TILE_NONE
 	dw NopFunc ; TILE_FLOOR
-	dw DigWall ; TILE_WALL
+	dw DigWall ; TILE_DIRT_WALL
+	dw DigWall ; TILE_STONE_WALL
 
 ProcessInput::
 
