@@ -13,7 +13,6 @@
 # 7 = Cadence
 # 8 = Dirt
 # 9 to 16 unused
-palettes, 0, 0
 # Hearts (2)
 heart_full_0, 00, 2, 7
 heart_full_1, 20, 2, 7
