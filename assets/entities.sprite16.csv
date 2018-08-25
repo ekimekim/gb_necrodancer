@@ -1,8 +1,4 @@
-#
-# Format:
-# Name, cellX, cellY, paletteIndex
-#
-# PALETTES (0)
+# PALETTES 12/16
 # 0 = Dark
 # 1 = Red
 # 2 = Blue
@@ -11,8 +7,15 @@
 # 5 = Yellow
 # 6 = Zombie
 # 7 = Cadence
-# 8 = Dirt
-# 9 to 16 unused
+# 8 = Tile_Dirt
+# 9 = Tile_Stone
+# 10 = Tile_Grey
+# 11 = Tile_Gold
+# 10 to 15 unused
+#
+# Format:
+# Name, cellX, cellY, paletteIndex
+#
 # UI Elements (3)
 shovel, 0, 3, 0
 dagger, 1, 3, 0
@@ -60,4 +63,7 @@ tile_dirt, 0, 12, 8
 tile_dirt_wall, 1, 12, 8
 # Tile None (13)
 tile_none, 0, 13, 8
-tile_none_wall, 1, 13, 8
+tile_none_wall, 1, 13, 10
+stairs, 0, 14, 9
+tile_stone, 1, 14, 9
+tile_shop_wall, 1, 15, 11
