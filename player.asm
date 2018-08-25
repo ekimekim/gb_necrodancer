@@ -13,6 +13,8 @@ MoveIntoTileHandlers:
 	dw NopFunc ; TILE_FLOOR
 	dw DigWall ; TILE_DIRT_WALL
 	dw DigWall ; TILE_STONE_WALL
+	dw PreventMove ; TILE_BOUNDARY
+	dw EndLevel ; TILE_STAIRS
 
 ProcessInput::
 
@@ -173,3 +175,7 @@ DigWall:
 	call CancelMove
 	ld C, TILE_FLOOR
 	jp SetTile
+
+; Called when we step on stairs. Does nothing for now.
+EndLevel:
+	ret

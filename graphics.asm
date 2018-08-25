@@ -22,10 +22,12 @@ SPRITE_CADENCE EQU 0
 SECTION "Graphics data", ROM0
 
 MapTilePixels:
-include "assets/tile_none.asm"
-include "assets/tile_dirt.asm"
-include "assets/tile_dirt_wall.asm"
-include "assets/tile_dirt_wall.asm"
+include "assets/tile_none.asm" ; TILE_NONE
+include "assets/tile_dirt.asm" ; TILE_FLOOR
+include "assets/tile_dirt_wall.asm" ; TILE_DIRT_WALL
+include "assets/shovel.asm" ; TILE_STONE_WALL placeholder
+include "assets/tile_none_wall.asm" ; TILE_BOUNDARY
+include "assets/dagger.asm" ; TILE_STAIRS placeholder
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
@@ -57,7 +59,9 @@ TileFlags:
 	include "assets/flags_tile_none.asm"
 	include "assets/flags_tile_dirt.asm"
 	include "assets/flags_tile_dirt_wall.asm"
-	include "assets/flags_tile_dirt_wall.asm"
+	include "assets/flags_tile_dirt.asm" ; placeholder
+	include "assets/flags_tile_none_wall.asm"
+	include "assets/flags_tile_dirt.asm" ; placeholder
 
 
 SECTION "Shadow sprite table", WRAM0, ALIGN[8]
