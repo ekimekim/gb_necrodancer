@@ -100,7 +100,7 @@ namespace sprite_unpacker
         static Dictionary<int, Color[]> GetPalettes(Bitmap imgSrc, List<Row> rows, int spriteWidth)
         {
             var palettes = new Dictionary<int, Color[]>();
-            var palettesRow = rows.First(r => r.Name == "palettes");
+            var palettesRow = new Row() { Name = "Palette", paletteIndex = -1, xPos = 0, yPos = 0 };
 
             for (int paletteIndex = 0; paletteIndex < 16; paletteIndex++)
             {

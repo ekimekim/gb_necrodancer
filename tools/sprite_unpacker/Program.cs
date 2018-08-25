@@ -24,6 +24,12 @@ namespace sprite_unpacker
                     var csvPath = args[i + 2];
                     Unpacker.Unpack(imagePath, csvPath, 16);
                 }
+                if (args[i] == "-sprite32")
+                {
+                    var imagePath = args[i + 1];
+                    var csvPath = args[i + 2];
+                    Unpacker.Unpack(imagePath, csvPath, 32);
+                }
             }
         }
     }

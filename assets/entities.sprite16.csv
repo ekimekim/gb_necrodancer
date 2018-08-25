@@ -64,6 +64,23 @@ tile_dirt_wall, 1, 12, 8
 # Tile None (13)
 tile_none, 0, 13, 8
 tile_none_wall, 1, 13, 10
+# Tile Stairs + Stone (14)
 stairs, 0, 14, 9
 tile_stone, 1, 14, 9
+# Tile Shop (15)
 tile_shop_wall, 1, 15, 11
+# Dragon Big 32x32 (20, 21)
+dragon_green00_0, 0, 20, 4
+dragon_green10_0, 1, 20, 4
+dragon_green01_0, 0, 21, 4
+dragon_green11_0, 1, 21, 4
+dragon_green00_1, 10, 20, 4
+dragon_green10_1, 11, 20, 4
+dragon_green01_1, 10, 21, 4
+dragon_green11_1, 11, 21, 4
+# Dragon Small (16x16)
+dragon_green_small_0, 2, 21, 4
+dragon_green_small_1, 12, 21, 4
+# FX Fire (20)
+fx_fire_0, 02, 20, 1
+fx_fire_1, 12, 20, 1
