@@ -172,21 +172,27 @@ UpdateGraphics::
 	ld A, [PlayerX]
 	ld B, A
 	ld A, [MovingX]
+	and A
+	jr z, .noMoveX
 	ld C, A
 	add A
 	add A ; A = 4*A
 	add C ; A = 4*A + C = 5 * MovingX
 	add B ; A = 5*MovingX + PlayerX = target column
 	call WriteColumn
+.noMoveX
 
 	ld A, [PlayerY]
 	ld B, A
 	ld A, [MovingY]
+	and A
+	jr z, .noMoveY
 	ld C, A
 	add A
 	add A ; A = 4*A
 	add B ; A = 4*MovingY + PlayerX = target column
 	call WriteRow
+.noMoveY
 
 	jp .afterRedraw
 
