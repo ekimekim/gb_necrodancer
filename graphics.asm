@@ -34,7 +34,7 @@ _EndMapSpritePixels:
 MAP_SPRITE_PIXELS_SIZE EQU _EndMapSpritePixels - MapSpritePixels
 
 ; palette definitions, 128 bytes
-include "pallettes.asm"
+include "palettes.asm"
 
 SECTION "Sprite Bounce LUT", ROM0, ALIGN[4]
 

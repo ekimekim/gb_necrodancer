@@ -4,4 +4,4 @@ include/assets/
 /tools/sprite_unpacker/.vs
 /tools/sprite_unpacker/obj
 assets/*.json
-include/pallettes.asm
+include/palettes.asm

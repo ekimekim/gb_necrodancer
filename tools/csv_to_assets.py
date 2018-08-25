@@ -4,27 +4,27 @@ import os
 
 from PIL import Image
 
-def main(filename, tall=False, image='entities.png', pallettepath='include/pallettes.asm'):
+def main(filename, tall=False, image='entities.png', palettepath='include/palettes.asm'):
 	table = csv.reader([line for line in open(filename) if not line.startswith('#')])
-	pallettes = get_pallettes(image)
-	sprite_pallettes = render_pallettes(pallettes[:8])
-	tile_pallettes = render_pallettes(pallettes[8:])
-	with open(pallettepath, 'w') as f:
+	palettes = get_palettes(image)
+	sprite_palettes = render_palettes(palettes[:8])
+	tile_palettes = render_palettes(palettes[8:])
+	with open(palettepath, 'w') as f:
 		f.write("""
 SpritePallettes:
 {}
 
 TilePallettes:
 {}
-""".format(sprite_pallettes, tile_pallettes))
+""".format(sprite_palettes, tile_palettes))
 
 	size = 16 if tall else 8
 	for row in table:
-		name, x, y, pallette = row
-		x, y, pallette = map(int, (x, y, pallette))
+		name, x, y, palette = row
+		x, y, palette = map(int, (x, y, palette))
 		obj = {
 			'image': image,
-			'pallette': pallettes[pallette],
+			'palette': palettes[palette],
 			'tall_sprites': tall,
 			'subimage': [x * size, y * size, size, size],
 		}
@@ -32,7 +32,7 @@ TilePallettes:
 			f.write(json.dumps(obj, indent=4) + '\n')
 
 
-def get_pallettes(imagepath):
+def get_palettes(imagepath):
 	image = Image.open(os.path.join('assets', imagepath))
 	if image.mode == 'P':
 		image = image.convert('RGBA')
@@ -44,14 +44,14 @@ def get_pallettes(imagepath):
 	]
 
 
-def render_pallettes(pallettes):
+def render_palettes(palettes):
 	lines = []
-	for pallette in pallettes:
-		pallette = map(map_color, pallette)
+	for palette in palettes:
+		palette = map(map_color, palette)
 		lines.append("\tdw {}".format(
 			', '.join(
 				'%{:>015}'.format(bin(color)[2:])
-				for color in pallette
+				for color in palette
 			)
 		))
 	return '\n'.join(lines)

@@ -1,7 +1,7 @@
 """This tool converts the images under a directory (including subdirs) into an RGBDS asm include file.
 It scans for *.json files that contain the keys:
 	"image": The target image file, absolute or relative to this file.
-	"pallette": The pallette (mapping from image pixel values to GB data values).
+	"palette": The palette (mapping from image pixel values to GB data values).
 	            This should take the form of a 4-item list of pixel values, mapping
 	            to GB data values 0-3 respectively. Pixel values depend on the mode of the image,
 	            eg. a 3-item list [R, G, B] for color images, a simple integer for greyscale.
@@ -70,7 +70,7 @@ def process_file(targetdir, filepath, outdir):
 		x, y, dx, dy = meta['subimage']
 		image = image.crop((x, y, x + dx, y + dy))
 
-	tiles = image_to_tiles(image, meta['pallette'], meta.get('length'), meta.get('tall_sprites'))
+	tiles = image_to_tiles(image, meta['palette'], meta.get('length'), meta.get('tall_sprites'))
 	text = tiles_to_text(filepath, tiles)
 
 	outpath_dir = os.path.join(outdir, os.path.relpath(filepath_dir, targetdir))
@@ -86,12 +86,12 @@ def hashable(value):
 	return tuple(value) if isinstance(value, list) else value
 
 
-def image_to_tiles(image, pallette, length=None, tall_sprites=False):
+def image_to_tiles(image, palette, length=None, tall_sprites=False):
 	width, height = image.size
 
-	if len(pallette) != 4:
-		raise ValueError("pallette must be exactly 4 items")
-	pallette = {hashable(value): index for index, value in enumerate(pallette)}
+	if len(palette) != 4:
+		raise ValueError("palette must be exactly 4 items")
+	palette = {hashable(value): index for index, value in enumerate(palette)}
 
 	if tall_sprites:
 		rows_cols = [
@@ -107,22 +107,22 @@ def image_to_tiles(image, pallette, length=None, tall_sprites=False):
 		length = len(rows_cols)
 
 	tiles = [
-		extract_tile(image, row, col, pallette)
+		extract_tile(image, row, col, palette)
 		for row, col in rows_cols[:length]
 	]
 
 	return tiles
 
 
-def extract_tile(image, row, col, pallette):
+def extract_tile(image, row, col, palette):
 	tile = []
 	for y in range(row * 8, (row + 1) * 8):
 		line = []
 		for x in range(col * 8, (col + 1) * 8):
 			pixel = image.getpixel((x, y))
-			if pixel not in pallette:
-				raise Exception("Pixel ({}, {}) = {} is not a value in the pallette".format(x, y, pixel))
-			value = pallette[pixel]
+			if pixel not in palette:
+				raise Exception("Pixel ({}, {}) = {} is not a value in the palette".format(x, y, pixel))
+			value = palette[pixel]
 			line.append(value)
 		tile.append(line)
 	return tile

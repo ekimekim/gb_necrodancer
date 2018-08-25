@@ -14,11 +14,11 @@ RGBFIX_ARGS := -C
 
 all: build/release/rom.gb tests/.uptodate
 
-include/pallettes.asm: assets/entities.png assets/entities.sprite16.csv assets/entities.sprite8.csv tools/csv_to_assets.py
+include/palettes.asm: assets/entities.png assets/entities.sprite16.csv assets/entities.sprite8.csv tools/csv_to_assets.py
 	python tools/csv_to_assets.py assets/entities.sprite8.csv
 	python tools/csv_to_assets.py assets/entities.sprite16.csv --tall
 
-include/assets/.uptodate: $(ASSETS) tools/assets_to_asm.py include/pallettes.asm
+include/assets/.uptodate: $(ASSETS) tools/assets_to_asm.py include/palettes.asm
 	python tools/assets_to_asm.py assets/ include/assets/
 	touch $@
 
