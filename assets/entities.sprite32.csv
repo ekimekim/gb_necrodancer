@@ -17,4 +17,5 @@
 # Name, cellX, cellY, paletteIndex
 #
 # UI Elements (3)
-dragon_green, 0, 10, 4
+dragon_green_0, 0, 10, 4
+dragon_green_1, 5, 10, 4
