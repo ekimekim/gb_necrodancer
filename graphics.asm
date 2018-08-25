@@ -28,10 +28,10 @@ include "assets/tile_dirt_wall.asm"
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
-MapSpritePixels:
+SpritePixels:
 include "assets/cadence_0.asm"
-_EndMapSpritePixels:
-MAP_SPRITE_PIXELS_SIZE EQU _EndMapSpritePixels - MapSpritePixels
+_EndSpritePixels:
+SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
 ; palette definitions, 128 bytes
 include "palettes.asm"
@@ -44,8 +44,21 @@ SpriteBounce:
 	db 0, -1, -2, -2, -3, -3, -3, -3, -4, -3, -3, -3, -3, -2, -2, -1
 
 
-SECTION "Shadow sprite table", WRAM0, ALIGN[8]
+SECTION "Sprite flags LUT", ROM0, ALIGN[4]
+; Should be in same order as SpritePixels
+SpriteFlags:
+	include "assets/flags_cadence_0.asm"
 
+
+SECTION "Tile flags LUT", ROM0, ALIGN[4]
+; Should be in same order as MapTilePixels
+TileFlags:
+	include "assets/flags_tile_none.asm"
+	include "assets/flags_tile_dirt.asm"
+	include "assets/flags_tile_dirt_wall.asm"
+
+
+SECTION "Shadow sprite table", WRAM0, ALIGN[8]
 ; A copy of the sprite table that gets DMA'd over during vblank
 ShadowSpriteTable:
 	ds 160
@@ -105,8 +118,8 @@ InitGraphics::
 	LongCopy
 
 	; Copy sprite data
-	ld BC, MAP_SPRITE_PIXELS_SIZE
-	ld HL, MapSpritePixels
+	ld BC, SPRITE_PIXELS_SIZE
+	ld HL, SpritePixels
 	ld DE, BaseTileMap
 	LongCopy
 
@@ -183,7 +196,7 @@ UpdateGraphics::
 	; entries.
 	; For simplicity / prevent overtime, we only do one per frame. This should be fine.
 	RingPop TileRedrawQueue, 63, D ; set z if empty
-	jr z, .afterRedraw
+	jp z, .afterRedraw
 	; assume that no partial triplets can be written
 	RingPopNoCheck TileRedrawQueue, 63, E
 	RingPopNoCheck TileRedrawQueue, 63, C
@@ -196,6 +209,15 @@ UpdateGraphics::
 	AbsDiff [PlayerY], E ; A = |PlayerY - E|
 	cp 5 ; set c if <= 4
 	jr nc, .afterRedraw ; if c not set, out of range
+
+	; Look up flag
+	ld A, C
+	srl A
+	srl A ; A = C/4
+	add LOW(TileFlags)
+	ld L, A
+	ld H, HIGH(TileFlags)
+	ld B, [HL]
 
 	; calculate destination tile
 	ld L, E
@@ -227,6 +249,21 @@ ENDR
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
+
+	; set flag on all 4 tiles
+	ld A, 1
+	ld [CGBVRAMBank], A ; set bank to 1
+	ld [HL], B ; set flags bottom-right
+	dec L
+	ld [HL], B ; set flags bottom-left
+	ld A, L
+	sub 31
+	ld L, A
+	ld [HL], B ; set flags top-right
+	dec L
+	ld [HL], B ; set flags top-left
+	xor A
+	ld [CGBVRAMBank], A ; set bank back to 0
 
 .afterRedraw
 
@@ -328,15 +365,26 @@ ENDR
 	; run for 9 tiles
 	ld B, 9
 .loop
+	push BC
 	push HL
 	call GetTile ; A = tile
-	pop HL
-	ld [HL+], A ; set tile top-left
-	inc A
-	inc A
-	ld [HL], A ; set tile top-right
-	dec A
 	ld C, A
+
+	; look up flags
+	rrca
+	rrca ; A = A/4, safe as bottom 2 bits of A are 0
+	add LOW(TileFlags)
+	ld L, A
+	ld H, HIGH(TileFlags)
+	ld B, [HL]
+
+	pop HL
+	ld [HL], C ; set tile top-left
+	inc L
+	inc C
+	inc C
+	ld [HL], C ; set tile top-right
+	dec C
 	ld A, L
 	add 31
 	ld L, A ; HL = saved HL + 32. no carry because aligned for odd rows.
@@ -345,12 +393,28 @@ ENDR
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
-	LongAdd HL, 31, HL ; Long add because even rows may not be aligned (every 8th row overflows)
+
+	ld A, 1
+	ld [CGBVRAMBank], A
+	ld [HL], B ; set flags bottom-right
+	dec L
+	ld [HL], B ; set flags bottom-left
+	ld A, L
+	sub 31
+	ld L, A
+	ld [HL], B ; set flags top-right
+	dec L
+	ld [HL], B ; set flags top-left
+	xor A
+	ld [CGBVRAMBank], A
+
+	LongAdd HL, 64, HL ; Long add because even rows may not be aligned (every 8th row overflows)
 	ld A, H
 	and %00000011 ; HL % 1024
 	or $98 ; loop HL back to start of TileGrid
 	ld H, A
 	inc E
+	pop BC
 	dec B
 	jr nz, .loop
 	ret
@@ -377,10 +441,20 @@ ENDR
 	; run for 11 tiles
 	ld B, 11
 .loop
+	push BC
 	push HL
 	call GetTile ; A = tile
-	pop HL
 	ld C, A
+
+	; look up flags
+	rrca
+	rrca ; A = A/4, safe as bottom 2 bits of A are 0
+	add LOW(TileFlags)
+	ld L, A
+	ld H, HIGH(TileFlags)
+	ld B, [HL]
+
+	pop HL
 	ld A, D
 	add A
 	and %00011111 ; A = (2*D) % 32
@@ -400,8 +474,25 @@ ENDR
 	inc C
 	inc L
 	ld [HL], C ; set tile bottom-right
+
+	ld A, 1
+	ld [CGBVRAMBank], A
+	ld [HL], B ; set flags bottom-right
+	dec L
+	ld [HL], B ; set flags bottom-left
+	ld A, L
+	sub 31
+	ld L, A
+	ld [HL], B ; set flags top-right
+	dec L
+	ld [HL], B ; set flags top-left
+	xor A
+	ld [CGBVRAMBank], A
+
 	pop HL ; HL = start of target row again
 	inc D
+
+	pop BC
 	dec B
 	jr nz, .loop
 	ret

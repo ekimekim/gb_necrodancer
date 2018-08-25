@@ -11,10 +11,10 @@ def main(filename, tall=False, image='entities.png', palettepath='include/palett
 	tile_palettes = render_palettes(palettes[8:])
 	with open(palettepath, 'w') as f:
 		f.write("""
-SpritePallettes:
+SpritePalettes:
 {}
 
-TilePallettes:
+TilePalettes:
 {}
 """.format(sprite_palettes, tile_palettes))
 
@@ -30,6 +30,9 @@ TilePallettes:
 		}
 		with open('assets/{}.json'.format(name), 'w') as f:
 			f.write(json.dumps(obj, indent=4) + '\n')
+		flags = palette % 8
+		with open('include/assets/flags_{}.asm'.format(name), 'w') as f:
+			f.write("db %{:>08}".format(bin(flags)[2:]))
 
 
 def get_palettes(imagepath):
