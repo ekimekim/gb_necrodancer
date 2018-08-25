@@ -60,7 +60,15 @@ def process_file(targetdir, filepath, outdir):
 		imagepath = os.path.join(filepath_dir, imagepath)
 
 	name = meta.get('name', os.path.basename(filepath)[:-len('.json')])
+
 	image = Image.open(imagepath)
+
+	if image.mode == 'P':
+		image = image.convert('RGBA')
+
+	if 'subimage' in meta:
+		x, y, dx, dy = meta['subimage']
+		image = image.crop((x, y, x + dx, y + dy))
 
 	tiles = image_to_tiles(image, meta['pallette'], meta.get('length'), meta.get('tall_sprites'))
 	text = tiles_to_text(filepath, tiles)
