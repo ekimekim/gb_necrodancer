@@ -23,8 +23,8 @@ SECTION "Graphics data", ROM0
 
 MapTilePixels:
 include "assets/tile_none.asm"
-include "assets/tile_dirt_0.asm"
-include "assets/tile_dirt_wall_0.asm"
+include "assets/tile_dirt.asm"
+include "assets/tile_dirt_wall.asm"
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
@@ -33,22 +33,8 @@ include "assets/cadence_0.asm"
 _EndMapSpritePixels:
 MAP_SPRITE_PIXELS_SIZE EQU _EndMapSpritePixels - MapSpritePixels
 
-; define a color word from rgb args
-Color: MACRO
-value = \3 << 10 + \2 << 5 + \1
-	db LOW(value), HIGH(value)
-ENDM
-
-TilePalettes:
-SpritePalettes:
-	; placeholder palettes for now, greyscale
-REPT 8
-	Color 31, 31, 31
-	Color 21, 21, 21
-	Color 10, 10, 10
-	Color 0, 0, 0
-ENDR
-
+; palette definitions, 128 bytes
+include "pallettes.asm"
 
 SECTION "Sprite Bounce LUT", ROM0, ALIGN[4]
 
