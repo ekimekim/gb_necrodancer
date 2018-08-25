@@ -152,7 +152,8 @@ PrepareGraphics::
 	ld D, 72 + 8
 	ld E, 64 + 16
 	ld B, SPRITE_CADENCE
-	ld C, 0
+	ld A, [SpriteFlags + SPRITE_CADENCE] ; hard-coded sprite tile number means easy flag lookup
+	ld C, A
 	call WriteSprite
 
 	ret
