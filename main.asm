@@ -117,7 +117,7 @@ LoadLevel::
 	; reset all counters
 	call InitCounters
 	; init other things
-	ld HL, PlaceholderMusic
+	ld HL, LevelMusic
 	call LoadAudio
 	; write initial set of tiles
 	call WriteScreen

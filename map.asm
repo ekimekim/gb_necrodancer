@@ -77,7 +77,7 @@ ENDR
 SECTION "Level data", ROM0
 
 LevelBeatLength::
-	db 60
+	db 31
 
 LevelStartPos::
 	db 1, 1

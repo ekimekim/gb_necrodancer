@@ -3,9 +3,10 @@ include "debug.asm"
 include "hram.asm"
 include "ioregs.asm"
 
-SECTION "Audio data", ROM0
+SECTION "Audio data", ROMX, BANK[1]
 
-include "placeholder_music.asm"
+LevelMusic::
+include "music/1-1.asm"
 
 SECTION "Audio methods", ROM0
 
@@ -144,6 +145,7 @@ UpdateAudio::
 ; Play white noise for A 1/256ths of a second (A must be in 1-64)
 ; Clobbers A, B.
 PlayNoise::
+	ret ; TEMP TODO remove
 	ld B, A
 	ld A, 64
 	sub B
