@@ -177,7 +177,9 @@ ProcessEnemies::
 	ld E, L
 	ld H, [HL]
 	ld L, A
+	push BC
 	call CallHL ; call behaviour
+	pop BC
 
 	ld H, D
 	ld L, E

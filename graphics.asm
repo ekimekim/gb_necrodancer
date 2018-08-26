@@ -23,9 +23,9 @@ MapTilePixels:
 include "assets/tile_none.asm" ; TILE_NONE
 include "assets/tile_dirt.asm" ; TILE_FLOOR
 include "assets/tile_dirt_wall.asm" ; TILE_DIRT_WALL
-include "assets/shovel.asm" ; TILE_STONE_WALL placeholder
+include "assets/tile_stone.asm" ; TILE_STONE_WALL
 include "assets/tile_none_wall.asm" ; TILE_BOUNDARY
-include "assets/dagger.asm" ; TILE_STAIRS placeholder
+include "assets/stairs.asm" ; TILE_STAIRS
 _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
@@ -65,9 +65,9 @@ TileFlags:
 	include "assets/flags_tile_none.asm"
 	include "assets/flags_tile_dirt.asm"
 	include "assets/flags_tile_dirt_wall.asm"
-	include "assets/flags_tile_dirt.asm" ; placeholder
+	include "assets/flags_tile_stone.asm"
 	include "assets/flags_tile_none_wall.asm"
-	include "assets/flags_tile_dirt.asm" ; placeholder
+	include "assets/flags_stairs.asm"
 
 
 SECTION "Shadow sprite table", WRAM0, ALIGN[8]
