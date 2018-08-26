@@ -33,7 +33,7 @@ ProtoBat::
 ProtoBatRed::
 	EnemyPrototype 1, 1, 2, BehaviourBat, 1, FLAG_BAT_RED_0, SPRITE_BAT_RED_0, SPRITE_BAT_RED_0
 ProtoSkeleton::
-	EnemyPrototype 2, 1, 1, BehaviourSeek, 0, FLAG_SKELETON_0, SPRITE_SKELETON_1, SPRITE_SKELETON_0
+	EnemyPrototype 2, 1, 1, BehaviourSeek, 0, FLAG_SKELETON_0, SPRITE_SKELETON_0, SPRITE_SKELETON_1
 ProtoSkeletonYellow::
 	EnemyPrototype 2, 2, 2, BehaviourSeek, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1, SPRITE_SKELETON_YELLOW_0
 ProtoSkeletonBlack::
@@ -156,6 +156,7 @@ ProcessEnemies::
 	RepointStruct HL, 0, enemy_active
 
 	or [HL] ; set z if still inactive, A = was already active | should become active
+	jr z, .inactive
 	ld [HL-], A ; save new active state
 
 	RepointStruct HL, enemy_active + (-1), enemy_step
@@ -202,6 +203,10 @@ ProcessEnemies::
 	ld [HL+], A
 
 	RepointStruct HL, enemy_moving_flag + 1, ENEMY_SIZE
+	jr .next
+
+.inactive
+	RepointStruct HL, enemy_active, ENEMY_SIZE
 
 .next
 	dec B
@@ -386,7 +391,9 @@ BehaviourSeek:
 	xor A
 	ld [HL], A
 
+	push HL
 	call MoveEnemy ; sets A = 1 if move failed
+	pop HL
 	dec A ; set z if A == 1
 	ret nz ; if we moved or attacked, we're done
 
@@ -408,7 +415,7 @@ BehaviourSeek:
 	jr c, .move_y_neg
 	ld A, 1
 .move_y_neg
-	ld [HL+], A
+	ld [HL], A
 
 	call MoveEnemy
 

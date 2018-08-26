@@ -130,7 +130,7 @@ LoadLevel::
 	; Load enemies
 	call InitEnemies
 	ld HL, LevelEnemies
-	ld A, [HL+]
+	ld A, [LevelEnemyCount]
 .add_enemies
 	push AF
 	ld A, [HL+]
