@@ -8,6 +8,8 @@ include "ring.asm"
 include "sprites.asm"
 include "vram.asm"
 
+include "assets/flag_define_cadence_0.asm"
+
 ; Screen is 20x18 hardware tiles = 10x9 map tiles
 ; We display with a half-tile offset to keep player tile centered,
 ; so 11x9 tiles are on screen at once.
@@ -35,6 +37,12 @@ include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
 include "assets/bat_0.asm" ; SPRITE_BAT_0
 include "assets/bat_red_0.asm" ; SPRITE_BAT_RED_0
+include "assets/skeleton_0.asm" ; SPRITE_SKELETON_0
+include "assets/skeleton_1.asm" ; SPRITE_SKELETON_1
+include "assets/skeleton_yellow_0.asm" ; SPRITE_SKELETON_YELLOW_0
+include "assets/skeleton_yellow_1.asm" ; SPRITE_SKELETON_YELLOW_1
+include "assets/skeleton_black_0.asm" ; SPRITE_SKELETON_BLACK_0
+include "assets/skeleton_black_1.asm" ; SPRITE_SKELETON_BLACK_1
 _EndSpritePixels:
 SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
@@ -47,16 +55,6 @@ SECTION "Sprite Bounce LUT", ROM0, ALIGN[4]
 ; This sequence approximates a parabolic arc with apex at 4 pixels
 SpriteBounce:
 	db 0, -1, -2, -2, -3, -3, -3, -3, -4, -3, -3, -3, -3, -2, -2, -1
-
-
-SECTION "Sprite flags LUT", ROM0, ALIGN[4]
-; Should be in same order as SpritePixels
-SpriteFlags:
-	include "assets/flags_cadence_0.asm"
-	include "assets/flags_slime_green_0.asm"
-	include "assets/flags_slime_blue_0.asm"
-	include "assets/flags_bat_0.asm"
-	include "assets/flags_bat_red_0.asm"
 
 
 SECTION "Tile flags LUT", ROM0, ALIGN[4]
@@ -218,8 +216,7 @@ PrepareGraphics::
 	add 64 + 16
 	ld E, A
 	ld B, SPRITE_CADENCE
-	ld A, [SpriteFlags + SPRITE_CADENCE] ; hard-coded sprite tile number means easy flag lookup
-	ld C, A
+	ld C, FLAG_CADENCE_0
 	call WriteSprite
 
 	; Save sprite slot
