@@ -99,10 +99,10 @@ ENEMY_COUNT SET ENEMY_COUNT + 1
 ENDM
 LevelEnemies::
 	; placeholder
-;	Enemy ProtoSlimeGreen, 13, 9
-;	Enemy ProtoSlimeBlue, 17, 7
-;	Enemy ProtoBat, 13, 11
-;	Enemy ProtoBatRed, 17, 11
+	Enemy ProtoSlimeGreen, 13, 9
+	Enemy ProtoSlimeBlue, 17, 7
+	Enemy ProtoBat, 13, 11
+	Enemy ProtoBatRed, 17, 11
 	Enemy ProtoSkeleton, 9, 10
 LevelEnemyCount::
 	db ENEMY_COUNT
