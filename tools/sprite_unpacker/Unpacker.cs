@@ -12,7 +12,7 @@ namespace sprite_unpacker
 {
     public class Unpacker
     {
-        static string DumpDirectoryPath = (Directory.GetCurrentDirectory() + "/Dump_" + DateTime.UtcNow.Millisecond);
+        static string DumpDirectoryPath = (Directory.GetCurrentDirectory() + "/Dump_" + DateTime.UtcNow.Ticks);
 
         const string FramesKey = "FRAMES";
         const string FrameSizeKey = "SPRITE_SIZE";

@@ -49,6 +49,8 @@ skeleton_yellow_0, 01, 8, 5
 skeleton_yellow_1, 11, 8, 5
 skeleton_black_0, 02, 8, 0
 skeleton_black_1, 12, 8, 0
+skeleton_yellow_headless, 03, 8, 5
+skeleton_black_headless, 04, 8, 0
 # Slime (9)
 slime_green_0, 00, 9, 4
 slime_green_1, 10, 9, 4
