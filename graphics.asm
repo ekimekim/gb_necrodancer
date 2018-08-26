@@ -239,6 +239,7 @@ PrepareGraphics::
 
 .for_each_enemy
 
+	; DE = enemy_pos_x
 	ld A, [DE]
 	inc A ; set z if A == $ff
 	jr z, .invalid_enemy
@@ -246,7 +247,7 @@ PrepareGraphics::
 	; check if on (or close to on) screen - within (6, 5)
 	dec A ; A = X pos again
 	ld H, A
-	inc DE
+	inc DE ; DE = enemy_pos_y
 	ld A, [DE]
 	ld L, A
 	AbsDiff [PlayerX], H
@@ -350,12 +351,27 @@ PrepareGraphics::
 	jr .next
 
 .offscreen
-	LongAdd DE, ENEMY_SIZE - 2, DE
+	LongAdd DE, ENEMY_SIZE - 1, DE
 
 .next
 	dec B
 	jp nz, .for_each_enemy
 .for_each_enemy_break
+
+	; zero remaining sprite slots
+	; note: will break if all sprite slots are used, or it goes over
+	ld H, HIGH(ShadowSpriteTable)
+	ld A, [SpriteSlot]
+	ld L, A
+.zeroloop
+	xor A
+	ld [HL+], A
+	ld [HL+], A
+	ld [HL+], A
+	ld [HL+], A
+	ld A, L
+	cp 160
+	jr nz, .zeroloop
 
 	ret
 
