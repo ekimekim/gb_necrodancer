@@ -263,7 +263,10 @@ MoveEnemy:
 	ld [HL+], A
 	ld [HL+], A
 
-	; apply damage
+	; apply damage (unless player just stepped on stairs)
+	ld A, [HasWon]
+	and A
+	jr nz, .has_won
 	RepointStruct HL, enemy_moving_x + 2, enemy_damage
 	ld B, [HL]
 	ld A, [PlayerHealth]
@@ -273,6 +276,8 @@ MoveEnemy:
 	; play noise
 	ld A, 64
 	call PlayNoise
+
+.has_won
 
 	; return ff
 	ld A, $ff

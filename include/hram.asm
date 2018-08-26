@@ -34,6 +34,9 @@ PlayerY rb 1
 ; Player health, in half-hearts
 PlayerHealth rb 1
 
+; Flag, set to 1 on level end
+HasWon rb 1
+
 ; Frames until next audio step
 AudioTimer rb 1
 

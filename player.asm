@@ -29,6 +29,11 @@ ProcessInput::
 	rla ; move top bit into c, setting c if health is negative
 	jp c, PlayerDead
 
+	; If player has won, do nothing while we wait for fadeout
+	ld A, [HasWon]
+	and A
+	ret nz
+
 	xor A
 	ld [MovingX], A
 	ld [MovingY], A
@@ -213,6 +218,8 @@ DigWall:
 	ld C, TILE_FLOOR
 	jp SetTile
 
-; Called when we step on stairs. Does nothing for now.
+; Called when we step on stairs.
 EndLevel:
+	ld A, 1
+	ld [HasWon], A
 	ret
