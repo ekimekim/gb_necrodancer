@@ -27,7 +27,7 @@ include "assets/flag_define_skeleton_black_0.asm"
 ProtoSlimeGreen::
 	EnemyPrototype 1, 1, 50, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
 ProtoSlimeBlue::
-	EnemyPrototype 2, 2, 1, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0
+	EnemyPrototype 2, 2, 1, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_1
 ProtoBat::
 	EnemyPrototype 2, 1, 1, BehaviourBat, 1, FLAG_BAT_0, SPRITE_BAT_0, SPRITE_BAT_0
 ProtoBatRed::

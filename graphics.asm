@@ -35,8 +35,9 @@ SpritePixels:
 include "assets/cadence_0.asm" ; SPRITE_CADENCE
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
-include "assets/bat_0.asm" ; SPRITE_BAT_0
-include "assets/bat_red_0.asm" ; SPRITE_BAT_RED_0
+include "assets/slime_blue_1.asm" ; SPRITE_SLIME_BLUE_1
+include "assets/bat_1.asm" ; SPRITE_BAT_0
+include "assets/bat_red_1.asm" ; SPRITE_BAT_RED_0
 include "assets/skeleton_0.asm" ; SPRITE_SKELETON_0
 include "assets/skeleton_1.asm" ; SPRITE_SKELETON_1
 include "assets/skeleton_yellow_0.asm" ; SPRITE_SKELETON_YELLOW_0
