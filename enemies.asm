@@ -41,9 +41,9 @@ ProtoBatRed::
 ProtoSkeleton::
 	EnemyPrototype 2, 1, 1, BehaviourSeek, 0, FLAG_SKELETON_0, SPRITE_SKELETON_0, SPRITE_SKELETON_1
 ProtoSkeletonYellow::
-	EnemyPrototype 2, 2, 2, BehaviourSeek, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1, SPRITE_SKELETON_YELLOW_0
+	EnemyPrototype 2, 2, 2, BehaviourSeek, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1
 ProtoSkeletonBlack::
-	EnemyPrototype 2, 3, 4, BehaviourSeek, 0, FLAG_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_1, SPRITE_SKELETON_BLACK_0
+	EnemyPrototype 2, 3, 4, BehaviourSeek, 0, FLAG_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_1
 ProtoWraith::
 	EnemyPrototype 1, 1, 1, BehaviourSeek, 0, FLAG_WRAITH_0, SPRITE_WRAITH_0, SPRITE_WRAITH_0
 ProtoDirebat::

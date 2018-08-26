@@ -29,12 +29,36 @@ SECTION "Level data", ROM0
 
 ENEMY_COUNT SET 0
 L11Enemies::
-	; placeholder
-	Enemy ProtoSlimeYellow, 13, 9
-	Enemy ProtoSlimeBlue, 17, 7
-	Enemy ProtoDirebat, 13, 11
-	Enemy ProtoDirebatGrey, 17, 11
-	Enemy ProtoWraith, 9, 10
+	Enemy ProtoSlimeBlue, 23, 6
+	Enemy ProtoSlimeGreen, 24, 6
+	Enemy ProtoSkeleton, 27, 7
+	Enemy ProtoWraith, 24, 3
+	Enemy ProtoSkeleton, 8, 11
+	Enemy ProtoSlimeGreen, 5, 11
+	Enemy ProtoSlimeBlue, 9, 11
+	Enemy ProtoSkeleton, 11, 21
+	Enemy ProtoSlimeGreen, 12, 22
+	Enemy ProtoSkeletonYellow, 11, 23
+	Enemy ProtoSlimeBlue, 8, 22
+	Enemy ProtoBatRed, 18, 19
+	Enemy ProtoSlimeGreen, 18, 21
+	Enemy ProtoSkeleton, 18, 22
+	Enemy ProtoSlimeBlue, 19, 21
+	Enemy ProtoSlimeBlue, 21, 21
+	Enemy ProtoSlimeGreen, 27, 21
+	Enemy ProtoBat, 27, 20
+	Enemy ProtoWraith, 28, 19
+	Enemy ProtoSlimeBlue, 30, 21
+	Enemy ProtoSlimeGreen, 31, 20
+	Enemy ProtoSkeleton, 30, 18
+	Enemy ProtoDirebat, 30, 20
+	; skeleton closet
+	Enemy ProtoSkeletonBlack, 10, 15
+	Enemy ProtoSkeletonBlack, 11, 15
+	Enemy ProtoSkeletonBlack, 12, 15
+	Enemy ProtoSkeletonBlack, 10, 16
+	Enemy ProtoSkeletonBlack, 11, 16
+	Enemy ProtoSkeletonBlack, 12, 16
 L11EnemyCount::
 	db ENEMY_COUNT
 
