@@ -17,7 +17,7 @@
 # Name, cellX, cellY, paletteIndex
 #
 # Hearts (2)
-heart_full_0, 00, 2, 7
-heart_full_1, 20, 2, 7
-heart_half_0, 00, 2, 7
-heart_half_1, 20, 2, 7
+heart_full_0, 00, 3, 7
+heart_full_1, 20, 3, 7
+heart_half_0, 00, 3, 7
+heart_half_1, 20, 3, 7
