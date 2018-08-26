@@ -32,7 +32,9 @@ TilePalettes:
 			f.write(json.dumps(obj, indent=4) + '\n')
 		flags = palette % 8
 		with open('include/assets/flags_{}.asm'.format(name), 'w') as f:
-			f.write("db %{:>08}".format(bin(flags)[2:]))
+			f.write("db %{:>08}\n".format(bin(flags)[2:]))
+		with open('include/assets/flag_define_{}.asm'.format(name), 'w') as f:
+			f.write("FLAG_{} SET %{:>08}\n".format(name.upper(), bin(flags)[2:]))
 
 
 def get_palettes(imagepath):

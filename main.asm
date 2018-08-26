@@ -107,6 +107,28 @@ LoadLevel::
 	; Load map data
 	ld HL, LevelMap
 	call LoadMap
+
+	; Load enemies
+	call InitEnemies
+	ld HL, LevelEnemies
+	ld A, [HL+]
+.add_enemies
+	push AF
+	ld A, [HL+]
+	ld C, A
+	ld A, [HL+]
+	ld B, A
+	ld A, [HL+]
+	ld D, A
+	ld A, [HL+]
+	ld E, A
+	push HL
+	call AddEnemy
+	pop HL
+	pop AF
+	dec A
+	jr nz, .add_enemies
+	
 	; Set other level vars
 	ld A, [LevelStartPos]
 	ld [PlayerX], A
@@ -114,11 +136,15 @@ LoadLevel::
 	ld [PlayerY], A
 	ld A, [LevelBeatLength]
 	ld [BeatLength], A
+
 	; reset all counters
 	call InitCounters
+
 	; init other things
 	ld HL, LevelMusic
 	call LoadAudio
+
 	; write initial set of tiles
 	call WriteScreen
+
 	ret

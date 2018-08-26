@@ -1,9 +1,11 @@
 
+include "enemy.asm"
 include "hram.asm"
 include "ioregs.asm"
 include "longcalc.asm"
 include "macros.asm"
 include "ring.asm"
+include "sprites.asm"
 include "vram.asm"
 
 ; Screen is 20x18 hardware tiles = 10x9 map tiles
@@ -13,10 +15,6 @@ include "vram.asm"
 ; The player is always at pixel location (72, 64), ie. size/2 - 8
 
 ; The map maps to the tilemap by (coord * 16) % 32
-
-
-; placeholders
-SPRITE_CADENCE EQU 0
 
 
 SECTION "Graphics data", ROM0
@@ -32,7 +30,8 @@ _EndMapTilePixels:
 MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
 SpritePixels:
-include "assets/cadence_0.asm"
+include "assets/cadence_0.asm" ; SPRITE_CADENCE
+include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 _EndSpritePixels:
 SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
@@ -51,6 +50,7 @@ SECTION "Sprite flags LUT", ROM0, ALIGN[4]
 ; Should be in same order as SpritePixels
 SpriteFlags:
 	include "assets/flags_cadence_0.asm"
+	include "assets/flags_slime_green_0.asm"
 
 
 SECTION "Tile flags LUT", ROM0, ALIGN[4]
@@ -75,6 +75,14 @@ SECTION "Other graphics memory", WRAM0
 ; This queue contains up to 21 triples (x, y, new value) of tiles to update
 TileRedrawQueue:
 	RingDeclare 63
+
+; Caches amount of bounce for this frame
+BounceAmount:
+	db
+
+; Scratch space for storing a pointer into shadow sprite table (which is aligned)
+SpriteSlot:
+	db
 
 
 SECTION "DMA wait routine data", ROM0
@@ -153,14 +161,152 @@ InitGraphics::
 ; Does work to prepare for UpdateGraphics. Cannot write to vram.
 PrepareGraphics::
 
+	call CalcBounce
+
 	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
 	ld HL, ShadowSpriteTable
 	ld D, 72 + 8
-	ld E, 64 + 16
+	ld A, [BounceAmount]
+	add 64 + 16
+	ld E, A
 	ld B, SPRITE_CADENCE
 	ld A, [SpriteFlags + SPRITE_CADENCE] ; hard-coded sprite tile number means easy flag lookup
 	ld C, A
 	call WriteSprite
+
+	ld A, L
+	ld [SpriteSlot], A
+
+	ld DE, EnemyList
+	ld B, ENEMY_LIST_SIZE
+	jr .for_each_enemy
+
+.invalid_enemy
+
+	LongAdd DE, ENEMY_SIZE, DE
+	dec B
+	jp z, .for_each_enemy_break
+
+.for_each_enemy
+
+	ld A, [DE]
+	inc A ; set z if A == $ff
+	jr z, .invalid_enemy
+
+	; check if on (or close to on) screen - within (6, 5)
+	dec A ; A = X pos again
+	ld H, A
+	inc DE
+	ld A, [DE]
+	ld L, A
+	AbsDiff [PlayerX], H
+	cp 7 ; set c if <= 6
+	jr nc, .offscreen
+	AbsDiff [PlayerY], L
+	cp 6 ; set c if <= 5
+	jr nc, .offscreen
+	; note that HL now = position, and we know it's on screen.
+
+	push BC
+
+	; HL -= player pos to get screen-relative position
+	ld A, [PlayerX]
+	ld B, A
+	ld A, [PlayerY]
+	ld C, A
+	ld A, H
+	sub B
+	ld H, A
+	ld A, L
+	sub C
+	ld L, A
+
+	; convert HL to screen coords by multiplying by 16 (mod 256)
+	; and adding player's base coords (72, 64) + sprite table bias (8, 16)
+	ld A, $0f
+	and H
+	swap A
+	add 72 + 8
+	ld H, A
+	ld A, $0f
+	and L
+	swap A
+	add 64 + 16
+	ld L, A
+
+	; is it moving?
+	RepointStruct DE, 1, enemy_step
+	ld A, [DE]
+	and A ; set z if A == 0
+	jr nz, .not_moving
+
+	; currently moving. subtract moving * animation timer
+	push DE
+	RepointStruct DE, enemy_step, enemy_moving_y
+	ld A, [DE]
+	ld C, A
+	dec DE
+	ld A, [DE]
+	ld D, A
+	ld E, C ; DE = moving
+
+	ld A, [AnimationTimer]
+	ld B, A
+.mul_loop
+	ld A, H
+	sub D
+	ld H, A
+	ld A, L
+	sub E
+	ld L, A
+	dec B
+	jr nz, .mul_loop
+
+	pop DE ; DE = enemy_step
+
+	; add bounce
+	ld A, [BounceAmount]
+	add H
+
+.not_moving
+	; DE = enemy_step and HL = screen coords
+
+	; look up flag and sprite
+	ld A, [DE]
+	ld B, A ; B = step
+	RepointStruct DE, enemy_step, enemy_sprite_flag
+	ld A, [DE]
+	ld C, A ; C = flag
+	RepointStruct DE, enemy_sprite_flag, enemy_sprites
+	push DE ; save enemy_sprites
+	ld A, B
+	LongAddToA DE, DE ; DE = enemy_sprites + step
+	ld A, [DE]
+	ld B, A ; B = sprite number
+
+	; final setup
+	ld D, H
+	ld E, L ; DE = HL = coords
+	ld H, HIGH(ShadowSpriteTable)
+	ld A, [SpriteSlot]
+	ld L, A
+
+	call WriteSprite
+	ld A, L
+	ld [SpriteSlot], A
+
+	pop DE ; DE = enemy_sprites
+	pop BC
+	RepointStruct DE, enemy_sprites, ENEMY_SIZE
+	jr .next
+
+.offscreen
+	LongAdd DE, ENEMY_SIZE - 2, DE
+
+.next
+	dec B
+	jp nz, .for_each_enemy
+.for_each_enemy_break
 
 	ret
 
@@ -320,20 +466,21 @@ ENDR
 
 	ret
 
+; Calculate bounce based on AnimationTimer and save in BounceAmount
+; Clobbers A, HL
+CalcBounce:
+	ld A, [AnimationTimer]
+	LongAddToA SpriteBounce, HL
+	ld A, [HL]
+	ld [BounceAmount], A
+	ret
 
 ; Write sprite with tile numbers B to B+3 to (D-8, E-16) with flags C using pair of sprite slots,
 ; with HL pointing to first slot.
-; Automatically includes sprite bounce.
 ; Clobbers A, E. Points HL to 2 sprite slots forward.
 WriteSprite:
-	ld A, [AnimationTimer]
-	push HL
-	LongAddToA SpriteBounce, HL
-	ld A, [HL]
-	pop HL
-	add A, E
+	ld A, E
 	ld [HL+], A ; first Y
-	ld E, A
 	ld A, D
 	ld [HL+], A ; first X
 	ld A, B

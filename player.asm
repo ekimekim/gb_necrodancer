@@ -121,7 +121,8 @@ ProcessInput::
 	ld A, 16
 	ld [AnimationTimer], A
 
-	ret
+	; Now process enemies
+	jp ProcessEnemies
 
 
 ; Clobbers A, B

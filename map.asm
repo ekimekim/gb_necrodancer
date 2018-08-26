@@ -83,6 +83,15 @@ LevelBeatLength::
 LevelStartPos::
 	db 15, 9
 
+LevelEnemies::
+	db 1 ; length of below list
+Enemy: MACRO ; Prototype, X, Y
+	dw \1
+	db \2, \3
+ENDM
+	; placeholder
+	Enemy ProtoSlimeGreen, 13, 9
+
 LevelMap::
 o SET TILE_FLOOR
 w SET TILE_DIRT_WALL
