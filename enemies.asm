@@ -366,5 +366,50 @@ BehaviourBat:
 
 
 ; Seeks out the player. Most 'normal' enemies act like this.
+; Will attempt to move closer in X coord, or in Y coord if X == 0 or blocked
 BehaviourSeek:
+	ld H, D
+	ld L, E
+	RepointStruct HL, enemy_behaviour + 1, enemy_pos_x
+
+	ld A, [PlayerX]
+	sub [HL] ; A = player x - enemy x, set z if equal, set c if player x < enemy x
+	inc HL
+	jr z, .no_x
+
+	RepointStruct HL, enemy_pos_y, enemy_moving_x
+	ld A, -1
+	jr c, .move_x_neg
+	ld A, 1
+.move_x_neg
+	ld [HL+], A
+	xor A
+	ld [HL], A
+
+	call MoveEnemy ; sets A = 1 if move failed
+	dec A ; set z if A == 1
+	ret nz ; if we moved or attacked, we're done
+
+	RepointStruct HL, enemy_moving_y, enemy_pos_y
+
+.no_x
+	ld A, [PlayerY]
+	sub [HL] ; A = player y - enemy y, set z if equal, set c if player y < enemy y
+	ret z ; if y diff == 0, x must've been blocked. just let that stand.
+	ld A, 0 ; can't xor, we want to preserve c flag
+
+	; a blocked x move might've set step to 1, set it back to 0
+	RepointStruct HL, enemy_pos_y, enemy_step
+	ld [HL-], A
+
+	RepointStruct HL, enemy_step + (-1), enemy_moving_x
+	ld [HL+], A
+	ld A, -1
+	jr c, .move_y_neg
+	ld A, 1
+.move_y_neg
+	ld [HL+], A
+
+	call MoveEnemy
+
 	ret
