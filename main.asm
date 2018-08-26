@@ -2,6 +2,8 @@
 include "debug.asm"
 include "hram.asm"
 include "ioregs.asm"
+include "level.asm"
+include "longcalc.asm"
 
 Section "Core Stack", WRAM0
 
@@ -38,11 +40,14 @@ Start::
 	call InitGraphics
 	call InitAudio
 
+	xor A
+	ld [LevelNumber], A
+
 	; Load first level
 	call LoadLevel
 
-	; Set up LCD: Use main tilegrid, signed tilemap, tall sprites
-	ld A, %10000110
+	; Set up LCD: Use main tilegrid, signed tilemap, tall sprites, window on and using alt tilegrid
+	ld A, %11100110
 	ld [LCDControl], A
 
 	; Enable vblank only
@@ -52,6 +57,7 @@ Start::
 
 .mainloop
 
+	call ProcessInput
 	call UpdateCounters
 	call PrepareGraphics
 	halt ; wait for vblank
@@ -60,7 +66,6 @@ IF DEBUG > 0
 ENDC
 	call UpdateAudio
 	call UpdateGraphics
-	call ProcessInput
 
 	; make randomness more random by always consuming at least one value per frame
 	call GetRNG
@@ -90,6 +95,8 @@ IF DEBUG > 0
 ENDC
 	ld A, 5
 	ld [PlayerHealth], A
+	xor A
+	ld [HasWon], A
 	ret
 
 
@@ -123,16 +130,43 @@ UpdateCounters:
 	ret
 
 
+HLFromDE:
+	ld A, [DE]
+	ld L, A
+	inc DE
+	ld A, [DE]
+	ld H, A
+	inc DE
+	ret
+
 ; Load the level. Expects screen to be off.
 LoadLevel::
+	ld A, [LevelNumber]
+	add A
+	add A
+	add A
+	add A ; A *= 16
+	LongAddToA Levels, DE
+
 	; Load map data
-	ld HL, LevelMap
+	RepointStruct DE, 0, level_map
+	call HLFromDE
+	push DE
 	call LoadMap
+	pop DE
+
 
 	; Load enemies
+	push DE
 	call InitEnemies
-	ld HL, LevelEnemies
-	ld A, [LevelEnemyCount]
+	pop DE
+	RepointStruct DE, level_map + 2, level_enemy_count
+	call HLFromDE
+	ld B, [HL]
+	RepointStruct DE, level_enemy_count + 2, level_enemy_list
+	call HLFromDE
+	push DE
+	ld A, B
 .add_enemies
 	push AF
 	ld A, [HL+]
@@ -149,23 +183,59 @@ LoadLevel::
 	pop AF
 	dec A
 	jr nz, .add_enemies
+	pop DE
 	
 	; Set other level vars
-	ld A, [LevelStartPos]
+	RepointStruct DE, level_enemy_list + 2, level_start_x
+	ld A, [DE]
 	ld [PlayerX], A
-	ld A, [LevelStartPos+1]
+	inc DE
+	ld A, [DE]
 	ld [PlayerY], A
-	ld A, [LevelBeatLength]
+	inc DE
+	RepointStruct DE, level_start_x + 2, level_beat_length
+	ld A, [DE]
 	ld [BeatLength], A
 
 	; reset all counters
 	call InitCounters
 
 	; init other things
-	ld HL, LevelMusic
+	RepointStruct DE, level_beat_length, level_music
+	call HLFromDE
 	call LoadAudio
 
 	; write initial set of tiles
 	call WriteScreen
+
+	ret
+
+
+; Turn off screen and load next level
+FinishLevel::
+	halt ; wait for vblank again, just in case
+	di
+	ld A, [LCDControl]
+	res 7, A
+	ld [LCDControl], A ; turn off screen
+	ei
+
+	ld A, [LevelCount]
+	ld B, A
+	ld A, [LevelNumber]
+	inc A
+	cp B ; set z if equal
+	jr nz, .no_reset
+	; reset back to level 1
+	xor A
+.no_reset
+	ld [LevelNumber], A
+
+	call LoadLevel
+
+	; turn screen back on
+	ld A, [LCDControl]
+	set 7, A
+	ld [LCDControl], A
 
 	ret

@@ -220,6 +220,6 @@ DigWall:
 
 ; Called when we step on stairs.
 EndLevel:
-	ld A, 1
+	ld A, 144+15 ; frames that fadeout takes
 	ld [HasWon], A
 	ret

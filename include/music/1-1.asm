@@ -1,6 +1,6 @@
 include "freq.asm"
 
-OneOneMusic:
+L11Music::
 	Step 6, 0, 0, NOTE_A2
 	Step 1, 0, 0, 0
 	Step 7, 0, 0, NOTE_A2
@@ -1964,4 +1964,4 @@ OneOneMusic:
 	Step 3, NOTE_E4, 0, NOTE_A3
 	Step 1, 0, 0, 0
 	Step 46, 0, 0, 0
-	EndSong OneOneMusic
+	EndSong L11Music

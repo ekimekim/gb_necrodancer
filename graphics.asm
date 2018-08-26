@@ -140,6 +140,14 @@ InitGraphics::
 	dec B
 	jr nz, .paletteLoop
 
+	; Hard-code tile palette 7 to black
+	ld A, $80 + 7 * 8
+	ld [TileGridPaletteIndex], A
+	xor A
+REPT 8
+	ld [TileGridPaletteData], A
+ENDR
+
 	; Copy tile data
 	ld BC, MAP_TILE_PIXELS_SIZE
 	ld HL, MapTilePixels
@@ -169,6 +177,32 @@ InitGraphics::
 
 	; Init redraw queue
 	RingInit TileRedrawQueue
+
+	; Init window
+	ld B, 0
+	ld HL, AltTileGrid
+	xor A
+.zeroWindow
+REPT 4
+	ld [HL+], A
+ENDR
+	dec B
+	jr nz, .zeroWindow
+	ld A, 1
+	ld [CGBVRAMBank], A
+	ld A, 7 ; hard-coded palette 7
+	ld HL, AltTileGrid
+.setWindowBlack
+REPT 4
+	ld [HL+], A
+ENDR
+	dec B
+	jr nz, .setWindowBlack
+	xor A
+	ld [CGBVRAMBank], A
+
+	xor A
+	ld [WindowX], A
 
 	ret
 
@@ -546,6 +580,16 @@ ENDR
 	ld A, [ShadowScrollY]
 	ld [ScrollY], A
 
+	; If we're in a post-win state, fade to black
+	ld A, [HasWon]
+	and A
+	jr z, .not_won
+	dec A
+	jp z, FinishLevel
+	ld [HasWon], A
+	ld [WindowY], A
+.not_won
+
 	ret
 
 ; Calculate bounce based on AnimationTimer and save in BounceAmount
@@ -742,7 +786,10 @@ ENDR
 
 ; Write entire screen centered on Player position.
 ; Takes long enough that screen must be off.
+; Also resets window.
 WriteScreen::
+	ld A, 255
+	ld [WindowY], A
 	ld A, [PlayerY]
 	sub 4
 	ld C, A
@@ -766,3 +813,4 @@ EnqueueTileRedraw::
 	RingPushNoCheck TileRedrawQueue, 63, E
 	RingPushNoCheck TileRedrawQueue, 63, C
 	ret
+

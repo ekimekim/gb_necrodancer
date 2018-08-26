@@ -5,7 +5,6 @@ include "ioregs.asm"
 
 SECTION "Audio data", ROMX, BANK[1]
 
-LevelMusic::
 include "music/1-1.asm"
 
 SECTION "Audio methods", ROM0

@@ -56,7 +56,7 @@ bgb: build/release/rom.gb
 	bgb $<
 
 clean:
-	rm -f build/*/*.o build/*/rom.sym build/*/rom.gb rom.gb include/assets/.uptodate include/assets/*.asm tests/*/*.{asm,o,sym,gb}
+	rm -f build/*/*.o build/*/rom.sym build/*/rom.gb rom.gb include/assets/.uptodate include/assets/*.asm tests/*/*.{asm,o,sym,gb} include/palettes.asm
 
 copy: build/release/rom.gb
 	copy-rom necrodancer build/release/rom.gb

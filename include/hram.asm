@@ -34,7 +34,7 @@ PlayerY rb 1
 ; Player health, in half-hearts
 PlayerHealth rb 1
 
-; Flag, set to 1 on level end
+; Flag, set to non-zero on level end. Then it's window position for fade out
 HasWon rb 1
 
 ; Frames until next audio step
@@ -42,6 +42,9 @@ AudioTimer rb 1
 
 ; Pointer to next audio step, little-endian
 AudioStep rb 2
+
+; Current level, starting from 0
+LevelNumber rb 1
 
 
 HRAM_END rb 0
