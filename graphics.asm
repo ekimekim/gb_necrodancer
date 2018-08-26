@@ -9,7 +9,7 @@ include "sprites.asm"
 include "vram.asm"
 
 include "assets/flag_define_cadence_0.asm"
-include "assets/flag_define_hearts.asm"
+include "assets/flag_define_heart.asm"
 
 ; Screen is 20x18 hardware tiles = 10x9 map tiles
 ; We display with a half-tile offset to keep player tile centered,
@@ -34,8 +34,9 @@ MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
 SpritePixels:
 include "assets/cadence_0.asm" ; SPRITE_CADENCE
-include "assets/hearts.asm" ; SPRITE_HEART_FULL / SPRITE_HEART_EMPTY
-include "assets/hearts_empty.asm" ; SPRITE_HEART_EMPTY / SPRITE_BLANK
+include "assets/heart.asm" ; SPRITE_HEART_FULL
+include "assets/heart_half.asm" ; SPRITE_HEART_HALF
+include "assets/heart_empty.asm" ; SPRITE_HEART_EMPTY
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
 include "assets/slime_blue_1.asm" ; SPRITE_SLIME_BLUE_1
@@ -233,12 +234,13 @@ PrepareGraphics::
 	ld B, 3
 .player_hearts
 	; determine position
-	ld E, -8 + 16 ; Y = -8 so bottom half is at top of screen
+	ld E, 16
 	ld A, B
 	rlca
 	rlca
-	rlca ; A = 8*B
-	add 128 + 8
+	rlca
+	rlca ; A = 16*B
+	add 96 + 8
 	ld D, A
 	; determine sprite number
 	ld A, B
@@ -258,8 +260,8 @@ PrepareGraphics::
 	jr nc, .no_empty
 	ld B, SPRITE_HEART_EMPTY
 .no_empty
-	ld C, FLAG_HEARTS
-	call WriteHalfSprite
+	ld C, FLAG_HEART
+	call WriteSprite
 
 	pop BC
 	dec B
@@ -577,19 +579,6 @@ WriteSprite:
 	ld [HL+], A ; second tile
 	ld A, C
 	ld [HL+], A ; second flags
-	ret
-
-
-; As WriteSprite but only writes one 8x16 sprite, not two.
-WriteHalfSprite:
-	ld A, E
-	ld [HL+], A ; Y
-	ld A, D
-	ld [HL+], A ; X
-	ld A, B
-	ld [HL+], A ; tile
-	ld A, C
-	ld [HL+], A ; flags
 	ret
 
 
