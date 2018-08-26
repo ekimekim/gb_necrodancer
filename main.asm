@@ -88,6 +88,8 @@ InitCounters:
 IF DEBUG > 0
 	ld [DetectLag], A
 ENDC
+	ld A, 5
+	ld [PlayerHealth], A
 	ret
 
 

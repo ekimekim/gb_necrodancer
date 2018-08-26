@@ -247,7 +247,38 @@ MoveEnemy:
 	add B
 	ld B, A
 
-	; TODO check if BC == player pos, if so attack
+	; check if BC == player pos, if so attack
+	ld A, [PlayerX]
+	cp B
+	jr nz, .no_attack
+	ld A, [PlayerY]
+	cp C
+	jr nz, .no_attack
+
+	; dest pos is player pos, make an attack
+
+	; clear move
+	RepointStruct HL, enemy_pos_y, enemy_moving_x
+	xor A
+	ld [HL+], A
+	ld [HL+], A
+
+	; apply damage
+	RepointStruct HL, enemy_moving_x + 2, enemy_damage
+	ld B, [HL]
+	ld A, [PlayerHealth]
+	sub B
+	ld [PlayerHealth], A
+
+	; play noise
+	ld A, 64
+	call PlayNoise
+
+	; return ff
+	ld A, $ff
+	ret
+
+.no_attack
 
 	push DE
 	push HL

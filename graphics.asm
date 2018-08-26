@@ -210,8 +210,12 @@ PrepareGraphics::
 	ld A, E
 	ld [ShadowScrollY], A
 
-	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
 	ld HL, ShadowSpriteTable
+	; Skip drawing player sprite if dead
+	ld A, [PlayerHealth]
+	rla ; set c if < 0
+	jr c, .player_dead
+	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
 	ld D, 72 + 8
 	ld A, [BounceAmount]
 	add 64 + 16
@@ -219,6 +223,7 @@ PrepareGraphics::
 	ld B, SPRITE_CADENCE
 	ld C, FLAG_CADENCE_0
 	call WriteSprite
+.player_dead
 
 	; Save sprite slot
 	ld A, L

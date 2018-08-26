@@ -24,6 +24,11 @@ ProcessInput::
 	and A
 	ret nz
 
+	; If player is dead, do nothing except wait for button press
+	ld A, [PlayerHealth]
+	rla ; move top bit into c, setting c if health is negative
+	jp c, PlayerDead
+
 	xor A
 	ld [MovingX], A
 	ld [MovingY], A
@@ -149,6 +154,11 @@ ProcessInput::
 
 	; Now process enemies
 	jp ProcessEnemies
+
+
+PlayerDead:
+	; for now just do nothing. TODO press key to reset
+	ret
 
 
 ; Clobbers A, B
