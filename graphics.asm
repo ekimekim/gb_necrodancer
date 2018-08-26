@@ -9,6 +9,7 @@ include "sprites.asm"
 include "vram.asm"
 
 include "assets/flag_define_cadence_0.asm"
+include "assets/flag_define_hearts.asm"
 
 ; Screen is 20x18 hardware tiles = 10x9 map tiles
 ; We display with a half-tile offset to keep player tile centered,
@@ -33,6 +34,8 @@ MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 
 SpritePixels:
 include "assets/cadence_0.asm" ; SPRITE_CADENCE
+include "assets/hearts.asm" ; SPRITE_HEART_FULL / SPRITE_HEART_EMPTY
+include "assets/hearts_empty.asm" ; SPRITE_HEART_EMPTY / SPRITE_BLANK
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
 include "assets/slime_blue_1.asm" ; SPRITE_SLIME_BLUE_1
@@ -210,6 +213,7 @@ PrepareGraphics::
 	ld A, E
 	ld [ShadowScrollY], A
 
+	; Draw player
 	ld HL, ShadowSpriteTable
 	; Skip drawing player sprite if dead
 	ld A, [PlayerHealth]
@@ -224,6 +228,42 @@ PrepareGraphics::
 	ld C, FLAG_CADENCE_0
 	call WriteSprite
 .player_dead
+
+	; Draw player hearts
+	ld B, 3
+.player_hearts
+	; determine position
+	ld E, -8 + 16 ; Y = -8 so bottom half is at top of screen
+	ld A, B
+	rlca
+	rlca
+	rlca ; A = 8*B
+	add 128 + 8
+	ld D, A
+	; determine sprite number
+	ld A, B
+	add B
+	dec A
+	ld C, A ; C = 2*B-1
+	ld A, [PlayerHealth]
+	inc A ; player health is stored 0-based
+	cp C ; set c if health < 2*B-1, z if health == 2*B-1
+	; eg. if B == 3, 2*B-1 == 5, then:
+	; if c then health < 5 (empty), if z then health == 5 (half), else health > 5 (full)
+	push BC
+	ld B, SPRITE_HEART_FULL
+	jr nz, .no_half
+	ld B, SPRITE_HEART_HALF
+.no_half
+	jr nc, .no_empty
+	ld B, SPRITE_HEART_EMPTY
+.no_empty
+	ld C, FLAG_HEARTS
+	call WriteHalfSprite
+
+	pop BC
+	dec B
+	jr nz, .player_hearts
 
 	; Save sprite slot
 	ld A, L
@@ -537,6 +577,19 @@ WriteSprite:
 	ld [HL+], A ; second tile
 	ld A, C
 	ld [HL+], A ; second flags
+	ret
+
+
+; As WriteSprite but only writes one 8x16 sprite, not two.
+WriteHalfSprite:
+	ld A, E
+	ld [HL+], A ; Y
+	ld A, D
+	ld [HL+], A ; X
+	ld A, B
+	ld [HL+], A ; tile
+	ld A, C
+	ld [HL+], A ; flags
 	ret
 
 
