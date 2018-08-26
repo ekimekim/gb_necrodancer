@@ -76,6 +76,12 @@ SECTION "Other graphics memory", WRAM0
 TileRedrawQueue:
 	RingDeclare 63
 
+; Contains the values we're going to update ScrollX and ScrollY to next
+ShadowScrollX:
+	db
+ShadowScrollY:
+	db
+
 ; Caches amount of bounce for this frame
 BounceAmount:
 	db
@@ -161,7 +167,43 @@ InitGraphics::
 ; Does work to prepare for UpdateGraphics. Cannot write to vram.
 PrepareGraphics::
 
+	; Calculate bounce
 	call CalcBounce
+
+	; Calcluate ScrollX and ScrollY
+	ld A, [PlayerX]
+	swap A
+	and $f0 ; A = 16 * A % 256
+	sub 72
+	ld D, A ; D = (16 * A - 72) % 256
+	ld A, [PlayerY]
+	swap A
+	sub 64
+	and $f0 ; A = (16 * A - 64) % 256
+	ld E, A
+	ld A, [MovingX]
+	ld H, A
+	ld A, [MovingY]
+	ld L, A
+	ld A, [AnimationTimer]
+	and A
+	jr z, .skipCalcScroll
+	ld B, A
+.calcScroll
+	ld A, D
+	sub H
+	ld D, A
+	ld A, E
+	sub L
+	ld E, A
+	dec B
+	jr nz, .calcScroll
+.skipCalcScroll
+	; Now D and E = 16 * player pos - player sprite location on screen - AnimationTimer * moving vector
+	ld A, D
+	ld [ShadowScrollX], A
+	ld A, E
+	ld [ShadowScrollY], A
 
 	; Player sprite is always at (72, 64) + bounce and occupies sprite slots 0-1
 	ld HL, ShadowSpriteTable
@@ -174,9 +216,11 @@ PrepareGraphics::
 	ld C, A
 	call WriteSprite
 
+	; Save sprite slot
 	ld A, L
 	ld [SpriteSlot], A
 
+	; Iterate through and draw enemies
 	ld DE, EnemyList
 	ld B, ENEMY_LIST_SIZE
 	jr .for_each_enemy
@@ -209,29 +253,26 @@ PrepareGraphics::
 
 	push BC
 
-	; HL -= player pos to get screen-relative position
-	ld A, [PlayerX]
+	; BC = Scroll X/Y
+	ld A, [ShadowScrollX]
 	ld B, A
-	ld A, [PlayerY]
+	ld A, [ShadowScrollY]
 	ld C, A
-	ld A, H
-	sub B
-	ld H, A
-	ld A, L
-	sub C
-	ld L, A
 
-	; convert HL to screen coords by multiplying by 16 (mod 256)
-	; and adding player's base coords (72, 64) + sprite table bias (8, 16)
+	; convert HL to background map coords by multiplying by 16 (mod 256),
+	; then to screen coords by subtracting ScrollX/Y,
+	; then to sprite coords by adding (8, 16)
 	ld A, $0f
 	and H
 	swap A
-	add 72 + 8
+	sub B
+	add 8
 	ld H, A
 	ld A, $0f
 	and L
 	swap A
-	add 64 + 16
+	sub C
+	add 16
 	ld L, A
 
 	; is it moving?
@@ -266,7 +307,8 @@ PrepareGraphics::
 
 	; add bounce
 	ld A, [BounceAmount]
-	add H
+	add L
+	ld L, A
 
 .not_moving
 	; DE = enemy_step and HL = screen coords
@@ -426,43 +468,15 @@ ENDR
 
 .afterRedraw
 
-	; Calcluate ScrollX and ScrollY
-	ld A, [PlayerX]
-	swap A
-	and $f0 ; A = 16 * A % 256
-	sub 72
-	ld D, A ; D = (16 * A - 72) % 256
-	ld A, [PlayerY]
-	swap A
-	sub 64
-	and $f0 ; A = (16 * A - 64) % 256
-	ld E, A
-	ld A, [MovingX]
-	ld H, A
-	ld A, [MovingY]
-	ld L, A
-	ld A, [AnimationTimer]
-	and A
-	jr z, .skipCalcScroll
-	ld B, A
-.calcScroll
-	ld A, D
-	sub H
-	ld D, A
-	ld A, E
-	sub L
-	ld E, A
-	dec B
-	jr nz, .calcScroll
-.skipCalcScroll
-	; Now D and E = 16 * player pos - player sprite location on screen - AnimationTimer * moving vector
-	ld A, D
-	ld [ScrollX], A
-	ld A, E
-	ld [ScrollY], A
-
+	; Copy sprite table
 	ld A, HIGH(ShadowSpriteTable)
 	call DMAWait
+
+	; Copy ScrollX/Y
+	ld A, [ShadowScrollX]
+	ld [ScrollX], A
+	ld A, [ShadowScrollY]
+	ld [ScrollY], A
 
 	ret
 
