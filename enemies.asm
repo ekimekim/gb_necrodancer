@@ -24,6 +24,10 @@ ProtoSlimeGreen::
 	EnemyPrototype 1, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
 ProtoSlimeBlue::
 	EnemyPrototype 2, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0
+ProtoBat::
+	EnemyPrototype 2, BehaviourBat, 1, FLAG_BAT_0, SPRITE_BAT_0, SPRITE_BAT_0
+ProtoBatRed::
+	EnemyPrototype 1, BehaviourBat, 1, FLAG_BAT_RED_0, SPRITE_BAT_RED_0, SPRITE_BAT_RED_0
 
 
 SECTION "Enemy code", ROM0
@@ -197,6 +201,7 @@ MoveEnemy:
 	add C
 	ld C, A
 	ld A, [HL+]
+	add B
 	ld B, A
 
 	; TODO check if BC == player pos, if so attack
@@ -256,4 +261,54 @@ BehaviourBlueSlime:
 	ld A, 1
 	sub [HL] ; 0->1, 1->0
 	ld [HL], A ; save new state
+	ret
+
+
+; Moves randomly. If hits a wall, retries up to 10 times (a hack; but easy)
+BehaviourBat:
+	ld H, D
+	ld L, E
+	RepointStruct HL, enemy_behaviour + 1, enemy_moving_y
+	ld B, 10
+
+.loop
+	push BC
+	push HL
+	call GetRNG ; A = random
+	rra ; set carry = random bit
+	jr c, .move_x
+
+.move_y
+	and 2 ; A = random value 0 or 2
+	dec A ; A = -1 or 1
+	ld [HL-], A ; moving_y = -1 or 1
+	xor A
+	ld [HL+], A ; moving_x = 0
+	jr .move
+
+.move_x
+	and 2 ; A = random value 0 or 2
+	dec A ; A = -1 or 1
+	dec HL
+	ld [HL+], A ; moving_x = -1 or 1
+	xor A
+	ld [HL], A ; moving_y = 0
+
+.move
+	call MoveEnemy ; sets A = 1 if move failed
+	pop HL
+	pop BC
+	dec A ; set z if A == 1
+	jr nz, .finish
+	dec B
+	jr nz, .loop ; try again, up to 10 times
+
+	; after 10th time, just accept lack of move this turn
+	ret
+
+.finish
+	; blocked moves may have resulted in setting step to 1, reset it to 0
+	RepointStruct HL, enemy_moving_y, enemy_step
+	xor A
+	ld [HL], A
 	ret

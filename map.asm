@@ -92,7 +92,7 @@ LevelStartPos::
 	db 15, 9
 
 LevelEnemies::
-	db 2 ; length of below list
+	db 4 ; length of below list
 Enemy: MACRO ; Prototype, X, Y
 	dw \1
 	db \2, \3
@@ -100,6 +100,8 @@ ENDM
 	; placeholder
 	Enemy ProtoSlimeGreen, 13, 9
 	Enemy ProtoSlimeBlue, 17, 7
+	Enemy ProtoBat, 13, 11
+	Enemy ProtoBatRed, 17, 11
 
 LevelMap::
 o SET TILE_FLOOR
