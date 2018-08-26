@@ -32,6 +32,7 @@ MAP_TILE_PIXELS_SIZE EQU _EndMapTilePixels - MapTilePixels
 SpritePixels:
 include "assets/cadence_0.asm" ; SPRITE_CADENCE
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
+include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
 _EndSpritePixels:
 SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
@@ -51,6 +52,7 @@ SECTION "Sprite flags LUT", ROM0, ALIGN[4]
 SpriteFlags:
 	include "assets/flags_cadence_0.asm"
 	include "assets/flags_slime_green_0.asm"
+	include "assets/flags_slime_blue_0.asm"
 
 
 SECTION "Tile flags LUT", ROM0, ALIGN[4]

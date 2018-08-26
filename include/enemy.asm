@@ -21,6 +21,7 @@ enemy_sprites rb 2 ; 2x sprite numbers, multiples of 4, indicating sprite to sho
                    ; eg. skeletons have [hands down, hands up]
 enemy_active rb 1 ; flag that indicates if enemy is active and moving yet
 enemy_behaviour rw 1 ; little-endian pointer to behaviour handler for this enemy
+enemy_state rb 2 ; Free-use area for behaviour handler to store state
 ENEMY_SIZE rb 0
 
 ; Enemy prototypes are a copy of this struct with initial values.
@@ -34,6 +35,7 @@ EnemyPrototype: MACRO
 	db \5, \6 ; sprites
 	db \3 ; active
 	dw \2 ; behaviour
+	db 0, 0 ; state
 ENDM
 
 ENDC

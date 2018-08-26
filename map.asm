@@ -33,14 +33,15 @@ GetTile::
 	ld H, %11000000
 	ld A, D
 	and H ; set z if D in [0, 64)
-	jr nz, .oob ; return A=0 if D out of range
+	jr nz, _GetTileOOB ; return A=0 if D out of range
 	ld A, E
 	and H ; set z if e in [0, 64)
-	jr nz, .oob ; return A=0 if E out of range
+	jr nz, _GetTileOOB ; return A=0 if E out of range
+_GetTile:
 	; calculate offset
 	ld L, E
 	; note that we're shifting the top 2 bits of H away, so
-	; its effective initial value is 0
+	; its effective initial value is 0 (when coming from GetTile)
 REPT 6
 	LongShiftL HL
 ENDR
@@ -52,10 +53,17 @@ ENDR
 	ld A, [HL] ; actual lookup
 	Debug "Looked up tile (%D%:%E%) = %A%"
 	ret
-.oob
+
+_GetTileOOB:
 	xor A
 	Debug "Looked up tile (%D%:%E%) = %A% (out of bounds)"
 	ret
+
+; As GetTile but skips bounds check. Result for out-of-bounds tiles undefined.
+; Clobbers HL.
+GetTileInBounds::
+	ld H, 0
+	jr _GetTile
 
 
 ; Update tile at coord (D, E) to C and schedules it for a graphics update
@@ -84,13 +92,14 @@ LevelStartPos::
 	db 15, 9
 
 LevelEnemies::
-	db 1 ; length of below list
+	db 2 ; length of below list
 Enemy: MACRO ; Prototype, X, Y
 	dw \1
 	db \2, \3
 ENDM
 	; placeholder
 	Enemy ProtoSlimeGreen, 13, 9
+	Enemy ProtoSlimeBlue, 17, 9
 
 LevelMap::
 o SET TILE_FLOOR

@@ -54,11 +54,23 @@ Start::
 	call UpdateCounters
 	call PrepareGraphics
 	halt ; wait for vblank
+IF DEBUG > 0
+	call CheckLag
+ENDC
 	call UpdateAudio
 	call UpdateGraphics
 	call ProcessInput
 
 	jp .mainloop
+
+
+CheckLag:
+	ld A, [DetectLag]
+	dec A ; set z if A == 1, which it should be
+	DebugIfNot z, "Detected %A% lag frames"
+	xor A
+	ld [DetectLag], A
+	ret
 
 
 InitCounters:
@@ -69,6 +81,9 @@ InitCounters:
 	ld [BeatHasProcessed], A
 	ld A, [BeatLength]
 	ld [BeatTimer], A
+IF DEBUG > 0
+	ld [DetectLag], A
+ENDC
 	ret
 
 

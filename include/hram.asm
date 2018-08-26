@@ -3,6 +3,10 @@ _G_HRAM EQU "true"
 
 RSSET $ff80
 
+; Incremented on VBlank interrupt, set to 0 each frame.
+; If ever > 1, indicates multiple vblanks per frame, ie. lag.
+DetectLag rb 1
+
 ; Counts from 15 to 0 (1 per frame) tracking progress of taking a step,
 ; or 0 if no animation
 AnimationTimer rb 1
