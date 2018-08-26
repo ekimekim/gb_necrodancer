@@ -213,7 +213,7 @@ ProcessEnemies::
 ; Expects HL = enemy_moving_y
 ; Outputs a result in A:
 ;  0: Moved
-;  1: Blocked by wall (cancels move and resets step counter to 1)
+;  1: Blocked by wall or enemy (cancels move and resets step counter to 1)
 ;  255: Attacked (cancels move)
 ; Clobbers B,C,H,L
 MoveEnemy:
@@ -235,19 +235,29 @@ MoveEnemy:
 
 	; TODO check if BC == player pos, if so attack
 
-	; Check if dest tile is floor
 	push DE
 	push HL
+
+	; Check if dest tile is floor
 	ld D, B
 	ld E, C
 	call GetTileInBounds ; sets A = dest tile type
-	pop HL
-	pop DE
 
 	cp TILE_FLOOR
-	jr z, .can_move
+	jr z, .tile_ok
 	cp TILE_STAIRS
-	jr z, .can_move
+	jr nz, .blocked
+
+.tile_ok
+	; check if enemy is blocking
+	push BC
+	call LookForEnemy ; set z if found
+	pop BC
+	jr nz, .can_move
+
+.blocked
+	pop HL
+	pop DE
 
 	; blocked, cancel move and set step to 1
 	; note moving flag is unchanged so we still bounce this turn
@@ -261,6 +271,9 @@ MoveEnemy:
 	ret ; note A = 1
 
 .can_move
+	pop HL
+	pop DE
+
 	; update pos and return
 	ld A, C
 	ld [HL-], A
