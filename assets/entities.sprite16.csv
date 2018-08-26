@@ -31,6 +31,10 @@ bat_0, 00, 5, 0
 bat_1, 10, 5, 0
 bat_red_0, 01, 5, 1
 bat_red_1, 11, 5, 1
+direbat_small_0, 02, 5, 5
+direbat_small_1, 12, 5, 5
+direbat_grey_small_0, 03, 5, 3
+direbat_grey_small_1, 13, 5, 3
 # Ghost (6)
 ghost, 00, 6, 0
 # Monkey (7)
@@ -70,6 +74,7 @@ tile_stone, 1, 14, 9
 # Tile Shop (15)
 tile_shop_wall, 1, 15, 11
 # Dragon Big 32x32 (20, 21)
+# not sure if this is correct way to break up big sprites?
 dragon_green00_0, 0, 20, 4
 dragon_green10_0, 1, 20, 4
 dragon_green01_0, 0, 21, 4
