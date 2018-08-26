@@ -34,6 +34,7 @@ Start::
 	stop
 
 	; init things
+	call InitRNG ; should be first
 	call InitGraphics
 	call InitAudio
 
@@ -60,6 +61,9 @@ ENDC
 	call UpdateAudio
 	call UpdateGraphics
 	call ProcessInput
+
+	; make randomness more random by always consuming at least one value per frame
+	call GetRNG
 
 	jp .mainloop
 
