@@ -99,7 +99,7 @@ Enemy: MACRO ; Prototype, X, Y
 ENDM
 	; placeholder
 	Enemy ProtoSlimeGreen, 13, 9
-	Enemy ProtoSlimeBlue, 17, 9
+	Enemy ProtoSlimeBlue, 17, 7
 
 LevelMap::
 o SET TILE_FLOOR
