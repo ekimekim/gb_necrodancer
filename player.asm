@@ -162,7 +162,30 @@ ProcessInput::
 
 
 PlayerDead:
-	; for now just do nothing. TODO press key to reset
+	call GatherInput
+	and $0f ; set z if nothing pressed
+	ret z
+
+	; a button pressed, reset
+	xor A
+	ld [LevelNumber], A
+	ld A, 5
+	ld [PlayerHealth], A
+
+	halt ; wait for vblank
+	di
+	ld A, [LCDControl]
+	res 7, A
+	ld [LCDControl], A ; turn off screen
+	ei
+
+	call LoadLevel
+
+	; turn screen back on
+	ld A, [LCDControl]
+	set 7, A
+	ld [LCDControl], A
+
 	ret
 
 

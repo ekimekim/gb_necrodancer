@@ -43,6 +43,9 @@ Start::
 	xor A
 	ld [LevelNumber], A
 
+	ld A, 5
+	ld [PlayerHealth], A
+
 	; Load first level
 	call LoadLevel
 
@@ -93,8 +96,6 @@ InitCounters:
 IF DEBUG > 0
 	ld [DetectLag], A
 ENDC
-	ld A, 5
-	ld [PlayerHealth], A
 	xor A
 	ld [HasWon], A
 	ret
