@@ -132,7 +132,13 @@ ProcessEnemies::
 	dec [HL] ; update step, set z if now 0
 	jr nz, .no_step
 
-	RepointStruct HL, enemy_step, enemy_behaviour
+	; set moving flag
+	RepointStruct HL, enemy_step, enemy_moving_flag
+	ld A, 1
+	ld [HL+], A
+
+	; invoke behaviour handler
+	RepointStruct HL, enemy_moving_flag + 1, enemy_behaviour
 	ld A, [HL+]
 	ld D, H
 	ld E, L
@@ -146,7 +152,12 @@ ProcessEnemies::
 	jr .next
 
 .no_step
-	RepointStruct HL, enemy_step, ENEMY_SIZE
+	; unset moving flag
+	RepointStruct HL, enemy_step, enemy_moving_flag
+	xor A
+	ld [HL+], A
+
+	RepointStruct HL, enemy_moving_flag + 1, ENEMY_SIZE
 
 .next
 	dec B
@@ -203,6 +214,7 @@ MoveEnemy:
 	jr z, .can_move
 
 	; blocked, cancel move and set step to 1
+	; note moving flag is unchanged so we still bounce this turn
 	RepointStruct HL, enemy_pos_y, enemy_moving_x
 	xor A
 	ld [HL+], A

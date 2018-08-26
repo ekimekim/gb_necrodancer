@@ -278,10 +278,11 @@ PrepareGraphics::
 	ld L, A
 
 	; is it moving?
-	RepointStruct DE, 1, enemy_step
+	RepointStruct DE, 1, enemy_moving_flag
 	ld A, [DE]
+	RepointStruct DE, enemy_moving_flag, enemy_step
 	and A ; set z if A == 0
-	jr nz, .not_moving
+	jr z, .not_moving
 
 	; currently moving. subtract moving * animation timer
 	push DE

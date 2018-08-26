@@ -7,13 +7,14 @@ ENEMY_LIST_SIZE EQU 32
 RSRESET
 
 ; displayed enemy position =
-;   if step == 0 then pos - moving * animation timer + bounce
+;   if moving_flag != 0 then pos - moving * animation timer + bounce
 ;   else pos
 
 enemy_pos_x rb 1 ; X position, 255 to indicate entire struct is invalid
 enemy_pos_y rb 1 ; Y position
 enemy_moving_x rb 1 ;
 enemy_moving_y rb 1 ; direction enemy is moving
+enemy_moving_flag rb 1 ; flag indicating if enemy should be animated this turn
 enemy_step rb 1 ; number of beats until enemy will move. 0 means moving this beat.
 enemy_step_length rb 1 ; number that step is reset to if 0. eg. 1 means moves every beat.
 enemy_sprite_flag rb 1 ; flag entry to display sprite with, most notably including palette
@@ -29,8 +30,8 @@ ENEMY_SIZE rb 0
 ; Args are: step length, behaviour, initially active, sprite flag, sprites (2 args)
 EnemyPrototype: MACRO
 	db 0, 0 ; position
-	db 0, 0 ; movement
-	db \1, \1 ; step and step length
+	db 0, 0, 0 ; movement and flag
+	db 0, \1 ; step and step length
 	db \4 ; sprite flag
 	db \5, \6 ; sprites
 	db \3 ; active
