@@ -10,10 +10,10 @@ SECTION "Player logic", ROM0
 ; List of handlers for each tile type, saying what to do when you attempt to move into them.
 ; Each handler is called with DE = (x,y), and may clobber all regs
 MoveIntoTileHandlers:
-	dw PreventMove ; TILE_NONE
+	dw PreventMove ; TILE_NONE, shouldn't ever happen
 	dw NopFunc ; TILE_FLOOR
 	dw DigWall ; TILE_DIRT_WALL
-	dw DigWall ; TILE_STONE_WALL
+	dw PreventMove ; TILE_STONE_WALL
 	dw PreventMove ; TILE_BOUNDARY
 	dw EndLevel ; TILE_STAIRS
 
@@ -193,6 +193,8 @@ CancelMove:
 ; Cancels movement and triggers missed beat
 PreventMove:
 	call CancelMove
+	ld A, 16
+	call PlayNoise
 	jp MissedBeat
 
 ; Cancels movement, digs out a wall by replacing it with a floor
