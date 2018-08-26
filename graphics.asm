@@ -47,8 +47,10 @@ include "assets/skeleton_0.asm" ; SPRITE_SKELETON_0
 include "assets/skeleton_1.asm" ; SPRITE_SKELETON_1
 include "assets/skeleton_yellow_0.asm" ; SPRITE_SKELETON_YELLOW_0
 include "assets/skeleton_yellow_1.asm" ; SPRITE_SKELETON_YELLOW_1
+include "assets/skeleton_yellow_headless.asm" ; SPRITE_SKELETON_YELLOW_HEADLESS
 include "assets/skeleton_black_0.asm" ; SPRITE_SKELETON_BLACK_0
 include "assets/skeleton_black_1.asm" ; SPRITE_SKELETON_BLACK_1
+include "assets/skeleton_black_headless.asm" ; SPRITE_SKELETON_BLACK_HEADLESS
 include "assets/wraith_0.asm" ; SPRITE_WRAITH_0
 include "assets/direbat_small_0.asm" ; SPRITE_DIREBAT_0
 include "assets/direbat_grey_small_0.asm" ; SPRITE_DIREBAT_GREY_0

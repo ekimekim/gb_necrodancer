@@ -41,9 +41,9 @@ ProtoBatRed::
 ProtoSkeleton::
 	EnemyPrototype 2, 1, 1, BehaviourSeek, 0, FLAG_SKELETON_0, SPRITE_SKELETON_0, SPRITE_SKELETON_1
 ProtoSkeletonYellow::
-	EnemyPrototype 2, 2, 2, BehaviourSeek, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1
+	EnemyPrototype 2, 2, 2, BehaviourSkeleton, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1
 ProtoSkeletonBlack::
-	EnemyPrototype 2, 3, 4, BehaviourSeek, 0, FLAG_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_1
+	EnemyPrototype 2, 3, 4, BehaviourSkeleton, 0, FLAG_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_1
 ProtoWraith::
 	EnemyPrototype 1, 1, 1, BehaviourSeek, 0, FLAG_WRAITH_0, SPRITE_WRAITH_0, SPRITE_WRAITH_0
 ProtoDirebat::
@@ -502,5 +502,47 @@ BehaviourSeek:
 	ld [HL], A
 
 	call MoveEnemy
+
+	ret
+
+
+; Like BehaviourSeek except when on 1 health, then switch to headless sprite, move every turn.
+; Expects headless variant to be sprite0 + 2, sprite1 + 1
+; Headless version doesn't move, and doesn't appear until next time skeleton would move,
+; but good enough.
+BehaviourSkeleton:
+	ld H, D
+	ld L, E
+	RepointStruct HL, enemy_behaviour + 1, enemy_health
+	ld A, [HL-]
+	dec A ; set z if A == 1
+	jp nz, BehaviourSeek
+
+	; set behaviour = nopfunc
+	RepointStruct HL, enemy_health + (-1), enemy_behaviour + 1
+	ld A, HIGH(NopFunc)
+	ld [HL-], A
+	ld A, LOW(NopFunc)
+	ld [HL-], A
+
+	; set sprites to headless
+	RepointStruct HL, enemy_behaviour + (-1), enemy_sprites + 1
+	ld A, [HL]
+	add 4
+	ld [HL-], A
+	ld A, [HL]
+	add 8
+	ld [HL-], A
+
+	; set step length to 1
+	RepointStruct HL, enemy_sprites + (-1), enemy_step_length
+	ld A, 1
+	ld [HL-], A
+
+	; set moving to (0, 0)
+	RepointStruct HL, enemy_step_length + (-1), enemy_moving_y
+	xor A
+	ld [HL-], A
+	ld [HL], A
 
 	ret
