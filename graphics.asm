@@ -588,6 +588,14 @@ ENDR
 	jp z, FinishLevel
 	ld [HasWon], A
 	ld [WindowY], A
+
+	cp 128 ; set c if <= 128
+	jr nc, .not_won
+	and %01110000
+	ld B, A
+	swap A
+	or B ; A = top 3 bits of HasWon, copied to both nibbles
+	ld [SoundVolume], A ; fade out sound
 .not_won
 
 	ret
@@ -786,10 +794,12 @@ ENDR
 
 ; Write entire screen centered on Player position.
 ; Takes long enough that screen must be off.
-; Also resets window.
+; Also resets window and audio.
 WriteScreen::
 	ld A, 255
 	ld [WindowY], A
+	ld A, %01110111
+	ld [SoundVolume], A
 	ld A, [PlayerY]
 	sub 4
 	ld C, A
