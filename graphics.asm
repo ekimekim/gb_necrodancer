@@ -33,6 +33,8 @@ SpritePixels:
 include "assets/cadence_0.asm" ; SPRITE_CADENCE
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
+include "assets/bat_0.asm" ; SPRITE_BAT_0
+include "assets/bat_red_0.asm" ; SPRITE_BAT_RED_0
 _EndSpritePixels:
 SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
@@ -53,6 +55,8 @@ SpriteFlags:
 	include "assets/flags_cadence_0.asm"
 	include "assets/flags_slime_green_0.asm"
 	include "assets/flags_slime_blue_0.asm"
+	include "assets/flags_bat_0.asm"
+	include "assets/flags_bat_red_0.asm"
 
 
 SECTION "Tile flags LUT", ROM0, ALIGN[4]

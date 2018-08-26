@@ -17,6 +17,8 @@ SECTION "Enemy prototypes", ROM0
 
 include "assets/flag_define_slime_green_0.asm"
 include "assets/flag_define_slime_blue_0.asm"
+include "assets/flag_define_bat_0.asm"
+include "assets/flag_define_bat_red_0.asm"
 
 ProtoSlimeGreen::
 	EnemyPrototype 1, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
