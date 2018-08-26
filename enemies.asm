@@ -18,16 +18,22 @@ SECTION "Enemy prototypes", ROM0
 
 include "assets/flag_define_slime_green_0.asm"
 include "assets/flag_define_slime_blue_0.asm"
+include "assets/flag_define_slime_yellow_0.asm"
 include "assets/flag_define_bat_0.asm"
 include "assets/flag_define_bat_red_0.asm"
 include "assets/flag_define_skeleton_0.asm"
 include "assets/flag_define_skeleton_yellow_0.asm"
 include "assets/flag_define_skeleton_black_0.asm"
+include "assets/flag_define_wraith_0.asm"
+include "assets/flag_define_direbat_small_0.asm"
+include "assets/flag_define_direbat_grey_small_0.asm"
 
 ProtoSlimeGreen::
 	EnemyPrototype 1, 1, 50, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
 ProtoSlimeBlue::
 	EnemyPrototype 2, 2, 1, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_1
+ProtoSlimeYellow::
+	EnemyPrototype 1, 1, 1, BehaviourYellowSlime, 1, FLAG_SLIME_YELLOW_0, SPRITE_SLIME_YELLOW_0, SPRITE_SLIME_YELLOW_0
 ProtoBat::
 	EnemyPrototype 2, 1, 1, BehaviourBat, 1, FLAG_BAT_0, SPRITE_BAT_0, SPRITE_BAT_0
 ProtoBatRed::
@@ -38,6 +44,12 @@ ProtoSkeletonYellow::
 	EnemyPrototype 2, 2, 2, BehaviourSeek, 0, FLAG_SKELETON_YELLOW_0, SPRITE_SKELETON_YELLOW_1, SPRITE_SKELETON_YELLOW_0
 ProtoSkeletonBlack::
 	EnemyPrototype 2, 3, 4, BehaviourSeek, 0, FLAG_SKELETON_BLACK_0, SPRITE_SKELETON_BLACK_1, SPRITE_SKELETON_BLACK_0
+ProtoWraith::
+	EnemyPrototype 1, 1, 1, BehaviourSeek, 0, FLAG_WRAITH_0, SPRITE_WRAITH_0, SPRITE_WRAITH_0
+ProtoDirebat::
+	EnemyPrototype 2, 2, 3, BehaviourBat, 1, FLAG_DIREBAT_SMALL_0, SPRITE_DIREBAT_0, SPRITE_DIREBAT_0
+ProtoDirebatGrey::
+	EnemyPrototype 2, 3, 4, BehaviourBat, 1, FLAG_DIREBAT_GREY_SMALL_0, SPRITE_DIREBAT_GREY_0, SPRITE_DIREBAT_GREY_0
 
 
 SECTION "Enemy code", ROM0
@@ -354,6 +366,42 @@ BehaviourBlueSlime:
 	sub [HL] ; 0->1, 1->0
 	ld [HL], A ; save new state
 	ret
+
+; Moves up/right/down/left, up first. Stores 0/1/2/3 in enemy_state[0] to move up/right/down/left next.
+YellowSlimeMoveLUT:
+	db 0, -1
+	db 1, 0
+	db 0, 1
+	db -1, 0
+BehaviourYellowSlime:
+	ld H, D
+	ld L, E
+	RepointStruct HL, enemy_behaviour + 1, enemy_state
+	ld A, [HL-] ; A = state
+	add A ; A = 2 * A
+	push HL
+	LongAddToA YellowSlimeMoveLUT, HL ; HL = state as index into LUT
+	ld A, [HL+]
+	ld B, A
+	ld C, [HL]
+	pop HL ; BC = move vector
+	RepointStruct HL, enemy_state + (-1), enemy_moving_x
+	ld A, B
+	ld [HL+], A
+	ld [HL], C
+	call MoveEnemy ; set A = 0 if actually moved
+	and A ; set z if actually moved
+	ret nz ; if we didn't move, we're done
+	; we moved, inc state
+	ld H, D
+	ld L, E
+	RepointStruct HL, enemy_behaviour + 1, enemy_state
+	ld A, [HL]
+	inc A
+	and 3 ; % 4
+	ld [HL], A ; save new state
+	ret
+
 
 
 ; Moves randomly. If hits a wall, retries up to 10 times (a hack; but easy)

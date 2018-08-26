@@ -40,6 +40,7 @@ include "assets/heart_empty.asm" ; SPRITE_HEART_EMPTY
 include "assets/slime_green_0.asm" ; SPRITE_SLIME_GREEN_0
 include "assets/slime_blue_0.asm" ; SPRITE_SLIME_BLUE_0
 include "assets/slime_blue_1.asm" ; SPRITE_SLIME_BLUE_1
+include "assets/slime_yellow_0.asm" ; SPRITE_SLIME_YELLOW_0
 include "assets/bat_1.asm" ; SPRITE_BAT_0
 include "assets/bat_red_1.asm" ; SPRITE_BAT_RED_0
 include "assets/skeleton_0.asm" ; SPRITE_SKELETON_0
@@ -48,6 +49,9 @@ include "assets/skeleton_yellow_0.asm" ; SPRITE_SKELETON_YELLOW_0
 include "assets/skeleton_yellow_1.asm" ; SPRITE_SKELETON_YELLOW_1
 include "assets/skeleton_black_0.asm" ; SPRITE_SKELETON_BLACK_0
 include "assets/skeleton_black_1.asm" ; SPRITE_SKELETON_BLACK_1
+include "assets/wraith_0.asm" ; SPRITE_WRAITH_0
+include "assets/direbat_small_0.asm" ; SPRITE_DIREBAT_0
+include "assets/direbat_grey_small_0.asm" ; SPRITE_DIREBAT_GREY_0
 _EndSpritePixels:
 SPRITE_PIXELS_SIZE EQU _EndSpritePixels - SpritePixels
 
@@ -292,8 +296,14 @@ PrepareGraphics::
 	ld B, SPRITE_HEART_HALF
 .no_half
 	jr nc, .no_empty
+.is_empty
 	ld B, SPRITE_HEART_EMPTY
 .no_empty
+	ld A, [PlayerHealth]
+	rla ; put top bit into carry
+	jr nc, .no_dead
+	ld B, SPRITE_HEART_EMPTY
+.no_dead
 	ld C, FLAG_HEART
 	call WriteSprite
 

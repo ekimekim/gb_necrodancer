@@ -30,11 +30,11 @@ SECTION "Level data", ROM0
 ENEMY_COUNT SET 0
 L11Enemies::
 	; placeholder
-	Enemy ProtoSlimeGreen, 13, 9
+	Enemy ProtoSlimeYellow, 13, 9
 	Enemy ProtoSlimeBlue, 17, 7
-	Enemy ProtoBat, 13, 11
-	Enemy ProtoBatRed, 17, 11
-	Enemy ProtoSkeleton, 9, 10
+	Enemy ProtoDirebat, 13, 11
+	Enemy ProtoDirebatGrey, 17, 11
+	Enemy ProtoWraith, 9, 10
 L11EnemyCount::
 	db ENEMY_COUNT
 
