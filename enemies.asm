@@ -1,4 +1,5 @@
 
+include "debug.asm"
 include "enemy.asm"
 include "hram.asm"
 include "longcalc.asm"
@@ -21,13 +22,13 @@ include "assets/flag_define_bat_0.asm"
 include "assets/flag_define_bat_red_0.asm"
 
 ProtoSlimeGreen::
-	EnemyPrototype 1, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
+	EnemyPrototype 1, 1, 50, NopFunc, 1, FLAG_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0, SPRITE_SLIME_GREEN_0
 ProtoSlimeBlue::
-	EnemyPrototype 2, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0
+	EnemyPrototype 2, 2, 1, BehaviourBlueSlime, 1, FLAG_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0, SPRITE_SLIME_BLUE_0
 ProtoBat::
-	EnemyPrototype 2, BehaviourBat, 1, FLAG_BAT_0, SPRITE_BAT_0, SPRITE_BAT_0
+	EnemyPrototype 2, 1, 1, BehaviourBat, 1, FLAG_BAT_0, SPRITE_BAT_0, SPRITE_BAT_0
 ProtoBatRed::
-	EnemyPrototype 1, BehaviourBat, 1, FLAG_BAT_RED_0, SPRITE_BAT_RED_0, SPRITE_BAT_RED_0
+	EnemyPrototype 1, 1, 2, BehaviourBat, 1, FLAG_BAT_RED_0, SPRITE_BAT_RED_0, SPRITE_BAT_RED_0
 
 
 SECTION "Enemy code", ROM0
@@ -74,6 +75,32 @@ AddEnemy::
 	inc BC
 	dec D
 	jr nz, .copyloop
+	ret
+
+
+; Looks for an enemy in position DE, returning a pointer to its enemy_pos_y in HL if found.
+; Sets z if found, unsets z if not found.
+; Clobbers A, B, HL
+LookForEnemy::
+	ld HL, EnemyList
+	ld B, ENEMY_LIST_SIZE
+.loop
+	ld A, [HL+]
+	cp D
+	Debug "Looking for enemy %B% at X=%D% and got %A%"
+	jr nz, .next
+	ld A, [HL]
+	cp E
+	Debug "Looking for enemy %B% at Y=%E% and got %A%"
+	ret z
+
+.next
+	LongAdd HL, ENEMY_SIZE - 1, HL
+
+	dec B
+	jr nz, .loop
+
+	inc B; unset z
 	ret
 
 

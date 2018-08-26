@@ -23,20 +23,23 @@ enemy_sprites rb 2 ; 2x sprite numbers, multiples of 4, indicating sprite to sho
 enemy_active rb 1 ; flag that indicates if enemy is active and moving yet
 enemy_behaviour rw 1 ; little-endian pointer to behaviour handler for this enemy
 enemy_state rb 2 ; Free-use area for behaviour handler to store state
+enemy_health rb 1 ; Health remaining
+enemy_damage rb 1 ; Damage (in half-hearts) done on hit
 ENEMY_SIZE rb 0
 
 ; Enemy prototypes are a copy of this struct with initial values.
 ; The following macro is used to more easily define them.
-; Args are: step length, behaviour, initially active, sprite flag, sprites (2 args)
+; Args are: step length, health, damage, behaviour, initially active, sprite flag, sprites (2 args)
 EnemyPrototype: MACRO
 	db 0, 0 ; position
 	db 0, 0, 0 ; movement and flag
 	db 0, \1 ; step and step length
-	db \4 ; sprite flag
-	db \5, \6 ; sprites
-	db \3 ; active
-	dw \2 ; behaviour
+	db \6 ; sprite flag
+	db \7, \8 ; sprites
+	db \5 ; active
+	dw \4 ; behaviour
 	db 0, 0 ; state
+	db \2, \3 ; health, damage
 ENDM
 
 ENDC

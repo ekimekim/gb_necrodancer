@@ -1,4 +1,5 @@
 
+include "enemy.asm"
 include "hram.asm"
 include "ioregs.asm"
 include "longcalc.asm"
@@ -35,7 +36,7 @@ ProcessInput::
 	; Can't move if we've already moved this beat (missed beat)
 	ld A, [BeatHasProcessed]
 	and A
-	jr nz, MissedBeat
+	jp nz, MissedBeat
 	jr .doTurn
 
 .noinput
@@ -97,6 +98,8 @@ ProcessInput::
 	add B
 	ld E, A
 
+	push DE ; DE = dest pos
+
 	call GetTile ; set A = tile we're moving to
 	rrca ; halve A (top bit = 0 since tile values are multiples of 4)
 	LongAddToA MoveIntoTileHandlers, HL
@@ -105,6 +108,29 @@ ProcessInput::
 	ld L, A ; HL = [HL], little endian
 	call CallHL ; call tile handler, clobbers all and may mutate hram / call MissedBeat
 
+	pop DE ; DE = dest pos
+
+	; check if enemy is in dest tile
+	call LookForEnemy ; sets z if enemy found
+	jr nz, .no_enemy
+
+	; Enemy found. HL = enemy's pos_y
+	RepointStruct HL, enemy_pos_y, enemy_health
+	dec [HL] ; reduce enemy health, set z if now zero
+	jr nz, .no_kill
+
+	; invalidate sprite by setting x pos = ff
+	RepointStruct HL, enemy_health, enemy_pos_x
+	ld A, $ff
+	ld [HL], A
+
+.no_kill
+	call CancelMove
+	; play "hit" sound
+	ld A, 32
+	call PlayNoise
+
+.no_enemy
 	; Finally, update new player pos with final result of MovingX/MovingY
 	ld A, [PlayerX]
 	ld B, A
@@ -127,8 +153,6 @@ ProcessInput::
 
 ; Clobbers A, B
 MissedBeat:
-	ld A, 64
-	call PlayNoise ; play white noise for 64/256th = 1/4th of a second
 	ret
 
 

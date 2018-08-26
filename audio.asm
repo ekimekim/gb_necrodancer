@@ -145,7 +145,6 @@ UpdateAudio::
 ; Play white noise for A 1/256ths of a second (A must be in 1-64)
 ; Clobbers A, B.
 PlayNoise::
-	ret ; TEMP TODO remove
 	ld B, A
 	ld A, 64
 	sub B
