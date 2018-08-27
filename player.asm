@@ -108,18 +108,6 @@ ProcessInput::
 	add B
 	ld E, A
 
-	push DE ; DE = dest pos
-
-	call GetTile ; set A = tile we're moving to
-	rrca ; halve A (top bit = 0 since tile values are multiples of 4)
-	LongAddToA MoveIntoTileHandlers, HL
-	ld A, [HL+]
-	ld H, [HL]
-	ld L, A ; HL = [HL], little endian
-	call CallHL ; call tile handler, clobbers all and may mutate hram / call MissedBeat
-
-	pop DE ; DE = dest pos
-
 	; check if enemy is in dest tile
 	call LookForEnemy ; sets z if enemy found
 	jr nz, .no_enemy
@@ -139,8 +127,22 @@ ProcessInput::
 	; play "hit" sound
 	ld A, 32
 	call PlayNoise
+	jr .after_tile
 
 .no_enemy
+	push DE ; DE = dest pos
+
+	call GetTile ; set A = tile we're moving to
+	rrca ; halve A (top bit = 0 since tile values are multiples of 4)
+	LongAddToA MoveIntoTileHandlers, HL
+	ld A, [HL+]
+	ld H, [HL]
+	ld L, A ; HL = [HL], little endian
+	call CallHL ; call tile handler, clobbers all and may mutate hram / call MissedBeat
+
+	pop DE ; DE = dest pos
+
+.after_tile
 	; Finally, update new player pos with final result of MovingX/MovingY
 	ld A, [PlayerX]
 	ld B, A
