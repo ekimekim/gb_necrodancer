@@ -66,6 +66,7 @@ def convert(filename, frames_per_beat, beat_length):
 
 	# Convert step durations from beats to frames.
 	# Remove any steps that end up with a duration of 0 frames
+	# and coalesce steps that are identical to previous.
 	frame_steps = []
 	frame = 0
 	for step in beat_steps:
@@ -78,6 +79,10 @@ def convert(filename, frames_per_beat, beat_length):
 		if not frames:
 			print "Dropping step that would be less than a frame long"
 			continue
+		# coalesce
+		if frame_steps and pitches == frame_steps[-1][1:]:
+			print "Coalescing into previous frame"
+			frames += frame_steps.pop()[0]
 		frame_steps.append((frames,) + pitches)
 
 	# Convert to text
@@ -86,13 +91,17 @@ def convert(filename, frames_per_beat, beat_length):
 
 
 def main(name, infile, outfile, frames_per_beat=31, beat_length=256):
+	# each step is 7 bytes, max size is 2**14 - 4 bytes for final jump step
+	MAX_LINES = (2**14 - 4) / 7
 	lines = convert(infile, frames_per_beat, beat_length)
-	with open(outfile, 'w') as f:
-		f.write('include "freq.asm"\n')
-		f.write('\n')
-		f.write('{}::\n'.format(name))
-		f.write('{}\n'.format('\n'.join(lines)))
-		f.write('\tEndSong {}\n'.format(name))
+	parts = [lines[i:i+MAX_LINES] for i in range(0, len(lines), MAX_LINES)]
+	for part_num, part in enumerate(parts):
+		with open("{}_{}.asm".format(outfile, part_num), 'w') as f:
+			f.write('include "freq.asm"\n')
+			f.write('\n')
+			f.write('{}_{}::\n'.format(name, part_num))
+			f.write('{}\n'.format('\n'.join(part)))
+			f.write('\tSongJump {}_{}\n'.format(name, (part_num + 1) % len(parts)))
 
 
 if __name__ == '__main__':

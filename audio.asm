@@ -2,10 +2,23 @@
 include "debug.asm"
 include "hram.asm"
 include "ioregs.asm"
+include "macros.asm"
 
-SECTION "Audio data", ROMX, BANK[1]
+SECTION "L11 audio data", ROMX
 
-include "music/1-1.asm"
+include "music/1-1_0.asm"
+
+SECTION "L12 audio data", ROMX
+
+include "music/1-2_0.asm"
+
+SECTION "L13 audio data 0", ROMX
+
+include "music/1-3_0.asm"
+
+SECTION "L13 audio data 1", ROMX
+
+include "music/1-3_1.asm"
 
 SECTION "Audio methods", ROM0
 
@@ -46,8 +59,10 @@ ENDR
 
 	ret
 
-; Sets up to begin playing song pointed to by HL
+; Sets up to begin playing song pointed to by HL with bank B
 LoadAudio::
+	ld A, B
+	SetROMBank
 	ld A, 1
 	ld [AudioTimer], A
 	ld A, H
@@ -78,7 +93,7 @@ UpdateAudio::
 .newStepAfterLoad
 	ld A, [HL+]
 	and A
-	jr z, .loopSong
+	jr z, .jumpSong
 	ld [AudioTimer], A
 	Debug "Set timer to %A%"
 
@@ -133,7 +148,10 @@ UpdateAudio::
 
 	ret
 
-.loopSong
+.jumpSong
+	; load bank given by next byte
+	ld A, [HL+]
+	SetROMBank
 	; jump to step at next two bytes
 	ld A, [HL+]
 	ld H, [HL]

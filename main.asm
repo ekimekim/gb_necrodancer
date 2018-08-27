@@ -203,6 +203,9 @@ LoadLevel::
 
 	; init other things
 	RepointStruct DE, level_beat_length, level_music
+	ld A, [DE]
+	ld B, A
+	inc DE
 	call HLFromDE
 	call LoadAudio
 

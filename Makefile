@@ -10,7 +10,8 @@ RELEASEOBJS := $(addprefix build/release/,$(OBJS))
 INCLUDES := $(wildcard include/*.asm)
 ASSETS := $(shell find assets/ -type f)
 TESTS := $(wildcard tests/*.py)
-RGBFIX_ARGS := -C
+# rgbfix: color only, MBC5 without RAM
+RGBFIX_ARGS := -C -m 0x19
 
 all: build/release/rom.gb tests/.uptodate
 
@@ -32,9 +33,9 @@ tests: testroms
 	./runtests
 
 include/music/.uptodate: tools/musicxml_to_asm.py Makefile $(wildcard music/*.xml)
-	python tools/musicxml_to_asm.py L11Music music/1-1.xml include/music/1-1.asm --frames-per-beat 31
-	python tools/musicxml_to_asm.py L12Music music/1-2.xml include/music/1-2.asm --frames-per-beat 28 --beat-length 384
-	python tools/musicxml_to_asm.py L13Music music/1-3.xml include/music/1-3.asm --frames-per-beat 25
+	python tools/musicxml_to_asm.py L11Music music/1-1.xml include/music/1-1 --frames-per-beat 31
+	python tools/musicxml_to_asm.py L12Music music/1-2.xml include/music/1-2 --frames-per-beat 28 --beat-length 384
+	python tools/musicxml_to_asm.py L13Music music/1-3.xml include/music/1-3 --frames-per-beat 25
 	touch $@
 
 build/debug/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/debug include/music/.uptodate

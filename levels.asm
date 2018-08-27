@@ -19,10 +19,12 @@ x SET TILE_STAIRS
 SECTION "Level structs", ROM0
 
 LevelCount::
-	db 1
+	db 3
 
 Levels::
-	DefineLevel L11Map, L11EnemyCount, L11Enemies, 15, 9, 31, L11Music
+	DefineLevel L11Map, L11EnemyCount, L11Enemies, 15, 9, 31, L11Music_0
+	DefineLevel L11Map, L11EnemyCount, L11Enemies, 15, 9, 31, L12Music_0
+	DefineLevel L11Map, L11EnemyCount, L11Enemies, 15, 9, 31, L13Music_0
 
 
 SECTION "Level data", ROM0

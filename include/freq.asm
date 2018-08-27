@@ -19,8 +19,10 @@ ENDC
 ENDM
 
 ; Marks the end of a song. \1 should be start of the song in order to loop.
-EndSong: MACRO
+; Can also be used to jump in memory to continue song data elsewhere.
+SongJump: MACRO
 	db 0
+	db BANK(\1)
 	dw \1
 ENDM
 
