@@ -31,10 +31,16 @@ testroms: tests/.uptodate
 tests: testroms
 	./runtests
 
-build/debug/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/debug
+include/music/.uptodate: tools/musicxml_to_asm.py Makefile $(wildcard music/*.xml)
+	python tools/musicxml_to_asm.py L11Music music/1-1.xml include/music/1-1.asm --frames-per-beat 31
+	python tools/musicxml_to_asm.py L12Music music/1-2.xml include/music/1-2.asm --frames-per-beat 28 --beat-length 384
+	python tools/musicxml_to_asm.py L13Music music/1-3.xml include/music/1-3.asm --frames-per-beat 25
+	touch $@
+
+build/debug/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/debug include/music/.uptodate
 	rgbasm -DDEBUG=1 -i include/ -v -o $@ $<
 
-build/release/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/release
+build/release/%.o: %.asm $(INCLUDES) include/assets/.uptodate build/release include/music/.uptodate
 	rgbasm -DDEBUG=0 -i include/ -v -o $@ $<
 
 build/debug/rom.gb: $(DEBUGOBJS)

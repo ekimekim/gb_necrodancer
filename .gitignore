@@ -1,5 +1,6 @@
 build/
 include/assets/
+include/music/
 /tools/sprite_unpacker/bin
 /tools/sprite_unpacker/.vs
 /tools/sprite_unpacker/obj

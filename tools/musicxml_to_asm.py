@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 Step = namedtuple('Step', ['duration', 'pitch'])
 
 
-def convert(filename, frames_per_beat):
+def convert(filename, frames_per_beat, beat_length):
 	with open(filename) as f:
 		root = BeautifulSoup(f, "xml")
 
@@ -25,7 +25,7 @@ def convert(filename, frames_per_beat):
 		parts.append(steps)
 		for measure in part('measure', recursive=False):
 			for note in measure('note', recursive=False):
-				duration = int(note.duration.string) / 256.
+				duration = float(note.duration.string) / beat_length
 				if note('rest', recursive=False):
 					steps.append(Step(duration, '0'))
 				else:
@@ -85,12 +85,12 @@ def convert(filename, frames_per_beat):
 	return lines
 
 
-def main(name, infile, outfile, frames_per_beat=31):
-	lines = convert(infile, frames_per_beat)
+def main(name, infile, outfile, frames_per_beat=31, beat_length=256):
+	lines = convert(infile, frames_per_beat, beat_length)
 	with open(outfile, 'w') as f:
 		f.write('include "freq.asm"\n')
 		f.write('\n')
-		f.write('{}:\n'.format(name))
+		f.write('{}::\n'.format(name))
 		f.write('{}\n'.format('\n'.join(lines)))
 		f.write('\tEndSong {}\n'.format(name))
 
